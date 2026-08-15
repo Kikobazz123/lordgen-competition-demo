@@ -1,0 +1,24 @@
+# Secrets
+.env
+.env.local
+*.env
+
+# Dependencies
+node_modules/
+
+# Pipeline run artifacts (regenerated per demo run)
+data/*
+!data/.gitkeep
+
+# Compiled research/business-analysis about the real locked demo business --
+# kept local only, not published to the public repo (developer instruction 2026-08-15).
+# The workflow JSON and README status lines may still name the business;
+# these three specifically compile third-party review/complaint research.
+docs/demo-business.md
+proposal.md
+execution-plan.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

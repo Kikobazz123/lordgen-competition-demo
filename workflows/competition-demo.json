@@ -1,0 +1,88 @@
+{
+  "_lordgen_note": "Exported from n8n via automation-builder (Phase 6). Source: data/execution-plan.json. n8n workflow ID: 055TNXGtfItIgqf1. Left unpublished (active: false) pending human review, per CLAUDE.md §10. Credentials are placeholders (OpenAI, Gmail) -- not production-ready as generated, per CLAUDE.md §14. Requires a one-time Data Table setup: 'LordGen Estimate Summary Log' (already created in n8n, columns: job_id, customer_contact, scope, price, status, summary_text, sent_at, notes).",
+  "name": "Nick's Plumbing -- Estimate Summary (Starter Automation)",
+  "active": false,
+  "id": "055TNXGtfItIgqf1",
+  "url": "https://lordgenai.app.n8n.cloud/workflow/055TNXGtfItIgqf1",
+  "description": "LordGen starter automation for Nick's Plumbing & Air Conditioning: drafts a plain-language customer-facing estimate summary via AI, gated by dispatcher email approval, before sending. Generated from data/execution-plan.json.",
+  "settings": { "executionOrder": "v1" },
+  "connections": {
+    "Estimate Submitted (Webhook)": { "main": [[{ "node": "Normalize Input", "type": "main", "index": 0 }]] },
+    "Normalize Input": { "main": [[{ "node": "Required Fields Present?", "type": "main", "index": 0 }]] },
+    "Required Fields Present?": { "main": [[{ "node": "Skip If Already Logged", "type": "main", "index": 0 }], [{ "node": "Log: Missing Input", "type": "main", "index": 0 }]] },
+    "Skip If Already Logged": { "main": [[{ "node": "Draft Estimate Summary", "type": "main", "index": 0 }]] },
+    "Draft Estimate Summary": { "main": [[{ "node": "AI Output Valid?", "type": "main", "index": 0 }]] },
+    "OpenAI Model": { "ai_languageModel": [[{ "node": "Draft Estimate Summary", "type": "ai_languageModel", "index": 0 }]] },
+    "AI Output Valid?": { "main": [[{ "node": "Request Dispatcher Approval", "type": "main", "index": 0 }], [{ "node": "Log: AI Failed", "type": "main", "index": 0 }]] },
+    "Request Dispatcher Approval": { "main": [[{ "node": "Dispatcher Approved?", "type": "main", "index": 0 }]] },
+    "Dispatcher Approved?": { "main": [[{ "node": "Send Summary To Customer", "type": "main", "index": 0 }], [{ "node": "Log: Rejected", "type": "main", "index": 0 }]] },
+    "Send Summary To Customer": { "main": [[{ "node": "Log: Approved & Sent", "type": "main", "index": 0 }]] },
+    "Log: Rejected": { "main": [[{ "node": "End (Rejected)", "type": "main", "index": 0 }]] },
+    "Log: AI Failed": { "main": [[{ "node": "End (AI Failed)", "type": "main", "index": 0 }]] },
+    "Log: Missing Input": { "main": [[{ "node": "End (Missing Input)", "type": "main", "index": 0 }]] }
+  },
+  "nodes": [
+    { "id": "34c35c45-f95d-48b3-8298-caf8a6c2d30a", "name": "Estimate Submitted (Webhook)", "type": "n8n-nodes-base.webhook", "typeVersion": 2.1, "position": [0, 300], "parameters": { "httpMethod": "POST", "path": "nicks-plumbing-estimate-submitted", "responseMode": "onReceived", "options": {} } },
+    { "id": "ad303794-5332-4072-a6ba-505ed7cb9ca0", "name": "Normalize Input", "type": "n8n-nodes-base.set", "typeVersion": 3.5, "position": [280, 300], "parameters": { "mode": "manual", "includeOtherFields": false, "assignments": { "assignments": [
+      { "id": "jobId", "name": "jobId", "value": "={{ $json.body?.jobId ?? $json.jobId ?? \"\" }}", "type": "string" },
+      { "id": "customerContact", "name": "customerContact", "value": "={{ $json.body?.customerContact ?? $json.customerContact ?? \"\" }}", "type": "string" },
+      { "id": "scope", "name": "scope", "value": "={{ $json.body?.scope ?? $json.scope ?? \"\" }}", "type": "string" },
+      { "id": "price", "name": "price", "value": "={{ $json.body?.price ?? $json.price ?? \"\" }}", "type": "string" }
+    ] } } },
+    { "id": "736c11ef-75e0-465c-99ab-87badbdce8d6", "name": "Required Fields Present?", "type": "n8n-nodes-base.if", "typeVersion": 2.3, "position": [560, 300], "parameters": { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" }, "conditions": [
+      { "leftValue": "={{ $json.customerContact }}", "operator": { "type": "string", "operation": "notEmpty" } },
+      { "leftValue": "={{ $json.scope }}", "operator": { "type": "string", "operation": "notEmpty" } },
+      { "leftValue": "={{ $json.price }}", "operator": { "type": "string", "operation": "notEmpty" } }
+    ], "combinator": "and" } } },
+    { "id": "e5b8c39f-704e-4059-b38c-543b23277e92", "name": "Skip If Already Logged", "type": "n8n-nodes-base.dataTable", "typeVersion": 1.1, "position": [840, 450], "parameters": { "resource": "row", "operation": "rowNotExists", "dataTableId": { "__rl": true, "mode": "name", "value": "LordGen Estimate Summary Log" }, "matchType": "anyCondition", "filters": { "conditions": [{ "keyName": "job_id", "condition": "eq", "keyValue": "={{ $json.jobId }}" }] } } },
+    { "id": "cbddd273-dd67-4fcf-8725-122dacf2e8bd", "name": "Draft Estimate Summary", "type": "@n8n/n8n-nodes-langchain.agent", "typeVersion": 3.1, "position": [1120, 450], "parameters": { "promptType": "define", "text": "=Job ID: {{ $json.jobId }}\nScope of work: {{ $json.scope }}\nPrice range: {{ $json.price }}\n\nWrite a short, plain-language customer-facing summary (2-4 sentences) of this estimate, using ONLY the job ID, scope, and price given above. Do not invent any other services, numbers, or terms.", "options": { "systemMessage": "You draft short, plain-language estimate summaries for a plumbing and HVAC company (Nick's Plumbing & Air Conditioning), strictly from the job ID, scope, and price fields provided in the prompt. Never invent a price, service, or term not present in the input. If a needed field looks empty or missing, say so instead of guessing." } } },
+    { "id": "da0f7dd2-9ba7-4675-a90d-4757f6a1e3d2", "name": "OpenAI Model", "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi", "typeVersion": 1.3, "position": [1120, 600], "parameters": { "model": { "__rl": true, "mode": "list", "value": "gpt-5-mini" } }, "_lordgen_note": "Credential is a placeholder -- connect a real OpenAI credential before live use." },
+    { "id": "3b02fd91-d70f-4d29-8676-b69b2090f757", "name": "AI Output Valid?", "type": "n8n-nodes-base.if", "typeVersion": 2.3, "position": [1400, 450], "parameters": { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json.output }}", "operator": { "type": "string", "operation": "notEmpty" } }], "combinator": "and" } } },
+    { "id": "6e716fad-bb72-4681-946e-6c6b783941d8", "name": "Request Dispatcher Approval", "type": "n8n-nodes-base.gmail", "typeVersion": 2.2, "position": [1680, 450], "parameters": { "resource": "message", "operation": "sendAndWait", "sendTo": "<DISPATCHER_EMAIL -- see .env, not committed here>", "subject": "=Approve estimate summary for Job #{{ $('Normalize Input').item.json.jobId }}", "message": "={{ $json.output }}", "responseType": "approval", "approvalOptions": { "values": { "approvalType": "double", "approveLabel": "Approve & Send", "disapproveLabel": "Reject" } }, "options": {} }, "_lordgen_note": "Gmail credential is still a placeholder -- connect a real Gmail credential before live use. The live n8n workflow (not this file) has the real dispatcher address set -- kept out of this public-repo copy to avoid publishing a personal email address. This is the workflow's human-approval gate (CLAUDE.md §10)." },
+    { "id": "653a8201-13d6-4f7d-9e44-8fc35686b0e4", "name": "Dispatcher Approved?", "type": "n8n-nodes-base.if", "typeVersion": 2.3, "position": [1960, 450], "parameters": { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" }, "conditions": [{ "leftValue": "={{ $json.data.approved }}", "operator": { "type": "boolean", "operation": "equals" }, "rightValue": true }], "combinator": "and" } } },
+    { "id": "42911711-97e6-443b-88db-11aa86675b93", "name": "Send Summary To Customer", "type": "n8n-nodes-base.gmail", "typeVersion": 2.2, "position": [2240, 350], "parameters": { "resource": "message", "operation": "send", "sendTo": "={{ $('Normalize Input').item.json.customerContact }}", "subject": "=Your estimate summary -- Job #{{ $('Normalize Input').item.json.jobId }}", "emailType": "text", "message": "={{ $('Draft Estimate Summary').item.json.output }}", "options": { "appendAttribution": false } }, "_lordgen_note": "Gmail credential is a placeholder -- connect before live use. Only reachable if Dispatcher Approved? is true." },
+    { "id": "80e9a187-9d6d-4ce2-b052-69fa0497ab9e", "name": "Log: Approved & Sent", "type": "n8n-nodes-base.dataTable", "typeVersion": 1.1, "position": [2520, 350], "parameters": { "resource": "row", "operation": "insert", "dataTableId": { "__rl": true, "mode": "name", "value": "LordGen Estimate Summary Log" }, "columns": { "mappingMode": "defineBelow", "value": { "job_id": "={{ $('Normalize Input').item.json.jobId }}", "customer_contact": "={{ $('Normalize Input').item.json.customerContact }}", "scope": "={{ $('Normalize Input').item.json.scope }}", "price": "={{ $('Normalize Input').item.json.price }}", "status": "approved_sent", "summary_text": "={{ $('Draft Estimate Summary').item.json.output }}", "sent_at": "={{ $now.toISO() }}", "notes": "Approved by dispatcher and sent to customer." }, "schema": [
+      { "id": "job_id", "displayName": "job_id", "type": "string", "display": true, "canBeUsedToMatch": true },
+      { "id": "customer_contact", "displayName": "customer_contact", "type": "string", "display": true, "canBeUsedToMatch": true },
+      { "id": "scope", "displayName": "scope", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "price", "displayName": "price", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "status", "displayName": "status", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "summary_text", "displayName": "summary_text", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "sent_at", "displayName": "sent_at", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "notes", "displayName": "notes", "type": "string", "display": true, "canBeUsedToMatch": false }
+    ] } } },
+    { "id": "bbf15b2f-a41c-42e8-b10c-d279c2e72ac2", "name": "Log: Rejected", "type": "n8n-nodes-base.dataTable", "typeVersion": 1.1, "position": [2240, 600], "parameters": { "resource": "row", "operation": "insert", "dataTableId": { "__rl": true, "mode": "name", "value": "LordGen Estimate Summary Log" }, "columns": { "mappingMode": "defineBelow", "value": { "job_id": "={{ $('Normalize Input').item.json.jobId }}", "customer_contact": "={{ $('Normalize Input').item.json.customerContact }}", "scope": "={{ $('Normalize Input').item.json.scope }}", "price": "={{ $('Normalize Input').item.json.price }}", "status": "rejected", "summary_text": "={{ $('Draft Estimate Summary').item.json.output }}", "sent_at": "", "notes": "Dispatcher declined the draft -- not sent to customer." }, "schema": [
+      { "id": "job_id", "displayName": "job_id", "type": "string", "display": true, "canBeUsedToMatch": true },
+      { "id": "customer_contact", "displayName": "customer_contact", "type": "string", "display": true, "canBeUsedToMatch": true },
+      { "id": "scope", "displayName": "scope", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "price", "displayName": "price", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "status", "displayName": "status", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "summary_text", "displayName": "summary_text", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "sent_at", "displayName": "sent_at", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "notes", "displayName": "notes", "type": "string", "display": true, "canBeUsedToMatch": false }
+    ] } } },
+    { "id": "b8ae7d02-763e-4850-b172-dba0b259bfdd", "name": "End (Rejected)", "type": "n8n-nodes-base.noOp", "typeVersion": 1, "position": [2520, 600], "parameters": {} },
+    { "id": "63893d37-0b16-4e34-b234-eb25efec359e", "name": "Log: AI Failed", "type": "n8n-nodes-base.dataTable", "typeVersion": 1.1, "position": [1680, 300], "parameters": { "resource": "row", "operation": "insert", "dataTableId": { "__rl": true, "mode": "name", "value": "LordGen Estimate Summary Log" }, "columns": { "mappingMode": "defineBelow", "value": { "job_id": "={{ $('Normalize Input').item.json.jobId }}", "customer_contact": "={{ $('Normalize Input').item.json.customerContact }}", "scope": "={{ $('Normalize Input').item.json.scope }}", "price": "={{ $('Normalize Input').item.json.price }}", "status": "ai_failed", "summary_text": "", "sent_at": "", "notes": "AI drafting produced empty or invalid output -- flagged for manual drafting instead of auto-retry." }, "schema": [
+      { "id": "job_id", "displayName": "job_id", "type": "string", "display": true, "canBeUsedToMatch": true },
+      { "id": "customer_contact", "displayName": "customer_contact", "type": "string", "display": true, "canBeUsedToMatch": true },
+      { "id": "scope", "displayName": "scope", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "price", "displayName": "price", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "status", "displayName": "status", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "summary_text", "displayName": "summary_text", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "sent_at", "displayName": "sent_at", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "notes", "displayName": "notes", "type": "string", "display": true, "canBeUsedToMatch": false }
+    ] } } },
+    { "id": "7eae31fa-a0fb-4316-9799-766679e47992", "name": "End (AI Failed)", "type": "n8n-nodes-base.noOp", "typeVersion": 1, "position": [1960, 300], "parameters": {} },
+    { "id": "44c533fc-abe5-404d-b4f7-8d4d5ab98cd5", "name": "Log: Missing Input", "type": "n8n-nodes-base.dataTable", "typeVersion": 1.1, "position": [840, 150], "parameters": { "resource": "row", "operation": "insert", "dataTableId": { "__rl": true, "mode": "name", "value": "LordGen Estimate Summary Log" }, "columns": { "mappingMode": "defineBelow", "value": { "job_id": "={{ $json.jobId }}", "customer_contact": "={{ $json.customerContact }}", "scope": "={{ $json.scope }}", "price": "={{ $json.price }}", "status": "flagged_missing_input", "summary_text": "", "sent_at": "", "notes": "Halted before AI drafting -- a required field was empty." }, "schema": [
+      { "id": "job_id", "displayName": "job_id", "type": "string", "display": true, "canBeUsedToMatch": true },
+      { "id": "customer_contact", "displayName": "customer_contact", "type": "string", "display": true, "canBeUsedToMatch": true },
+      { "id": "scope", "displayName": "scope", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "price", "displayName": "price", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "status", "displayName": "status", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "summary_text", "displayName": "summary_text", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "sent_at", "displayName": "sent_at", "type": "string", "display": true, "canBeUsedToMatch": false },
+      { "id": "notes", "displayName": "notes", "type": "string", "display": true, "canBeUsedToMatch": false }
+    ] } } },
+    { "id": "1917da21-aad3-4415-a263-a4a4f3d957f1", "name": "End (Missing Input)", "type": "n8n-nodes-base.noOp", "typeVersion": 1, "position": [1120, 150], "parameters": {} }
+  ]
+}
