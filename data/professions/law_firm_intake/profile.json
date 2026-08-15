@@ -1,0 +1,29 @@
+{
+  "profession": "Law firm intake (solo / small practice)",
+  "depth": "seeded",
+  "business": null,
+  "note": "Generic industry profile, NOT a specific researched business -- unlike Nick's Plumbing & Air Conditioning, no named firm was researched here. All facts below are industry-wide statistics gathered during the original candidate-business research pass (2026-08-13), before Nick's Plumbing was selected as the full-build demo business.",
+  "standard_needs": ["lead intake/triage", "call answering coverage", "structured follow-up process", "appointment scheduling"],
+  "facts": [
+    { "fact": "81% of law firms admit losing business because of slow responses.", "type": "verified", "source": "Legal Soft", "source_url": "https://www.legalsoft.com/blog/law-firm-client-intake-statistics", "confidence": "high" },
+    { "fact": "Only 25% of law firms respond to online leads in under 5 minutes; 26% never respond to an online lead at all.", "type": "verified", "source": "Legal Soft", "source_url": "https://www.legalsoft.com/blog/law-firm-client-intake-statistics", "confidence": "high" },
+    { "fact": "One in three calls to law firms is never answered live.", "type": "verified", "source": "FindLaw", "source_url": "https://www.findlaw.com/lawyer-marketing/blog/missed-calls-bad-intake-tank-law-firms-reputation/", "confidence": "high" },
+    { "fact": "70% of law firms lack a structured follow-up process for leads.", "type": "verified", "source": "FindLaw", "source_url": "https://www.findlaw.com/lawyer-marketing/blog/missed-calls-bad-intake-tank-law-firms-reputation/", "confidence": "high" },
+    { "fact": "A prospective client contacting multiple firms selects the first one to respond about 68% of the time.", "type": "verified", "source": "NatLawReview", "source_url": "https://natlawreview.com/article/intake-gap-costing-law-firms-cases-they-should-have-retained", "confidence": "high" }
+  ],
+  "pain_points": [
+    {
+      "description": "Missed and slow-answered calls, plus a lack of structured follow-up, cost solo/small firms new business industry-wide.",
+      "type": "inference",
+      "evidence": "Industry-wide statistics above are verified; whether they apply to any specific unnamed firm is an inference by design, since no specific firm was researched for this seeded profile.",
+      "confidence": "medium"
+    }
+  ],
+  "automation_opportunities": [
+    {
+      "opportunity": "AI-assisted intake triage: answer/log every inbound lead (call or web form) immediately, draft a same-day follow-up, and flag anything needing an attorney's direct attention.",
+      "rationale": "Directly targets the two largest verified gaps -- unanswered calls (1 in 3) and missing follow-up (70% of firms) -- with the same structural pattern already proven in the Nick's Plumbing build (AI draft, human-approval gate before anything client-facing goes out).",
+      "confidence": "medium"
+    }
+  ]
+}

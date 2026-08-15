@@ -9,14 +9,19 @@ node_modules/
 # Pipeline run artifacts (regenerated per demo run)
 data/*
 !data/.gitkeep
+# Seeded profession profiles are generic industry stats, no real business/complaint
+# data -- safe to publish (unlike the Nick's Plumbing exclusions below), demonstrates
+# the skills generalize across professions. See docs/professions.md.
+!data/professions/
+!data/professions/**
 
 # Compiled research/business-analysis about the real locked demo business --
 # kept local only, not published to the public repo (developer instruction 2026-08-15).
 # The workflow JSON and README status lines may still name the business;
 # these three specifically compile third-party review/complaint research.
 docs/demo-business.md
-proposal.md
-execution-plan.md
+/proposal.md
+/execution-plan.md
 
 # OS / editor
 .DS_Store

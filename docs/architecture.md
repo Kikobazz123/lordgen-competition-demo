@@ -66,9 +66,12 @@ One skill per pipeline stage. Build phases as actually executed (one skill per p
 
 Phase 7 (Integrations — ClickUp, n8n, GitHub) sits between Automation Builder and QA, connecting the MCP servers the earlier phases only referenced.
 
+## Profession config layer (added 2026-08-15)
+
+`business-research`, `opportunity-score`, and `proposal-generator` are not hard-coded to plumbing — they operate on whichever profession/business profile they're pointed at. Only **plumbing_hvac (Nick's Plumbing & Air Conditioning)** is a `full` build (real research through automation); two more professions exist at `seeded` depth (generic industry profiles, no execution plan or automation) to demonstrate the skills generalize. Full detail: `docs/professions.md`. This was merged in at reduced scope from `LORDGEN_UPGRADE_SPEC.md` — see that doc's "Why this scope" section for what was deliberately *not* adopted (multi-profession web UI, adaptive forms, PDF reports) and why.
+
 ## Known open items
 
-- n8n instance (self-hosted vs. Cloud) and credentials — needed before Phase 5.
-- Target ClickUp workspace/list for implementation tasks.
-- Demo business — not yet chosen.
-- Whether to reintroduce Gmail drafting later (optional, low-risk to add back).
+- Target ClickUp workspace/list for implementation tasks (Phase 7).
+- GitHub repo pushed (Phase 6 report) — public, business-specific research excluded (see `.gitignore`).
+- Whether/how to build a public-facing website — explicitly deferred, to be discussed separately (not assumed from `LORDGEN_UPGRADE_SPEC.md`).

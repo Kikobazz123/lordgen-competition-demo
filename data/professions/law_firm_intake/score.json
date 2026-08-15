@@ -1,0 +1,34 @@
+{
+  "input_source": "data/professions/law_firm_intake/profile.json",
+  "scoring_date": "2026-08-15",
+  "scoring_note": "Seeded profession, not a specific business -- scored with the same 8-factor rubric as opportunity-score/SKILL.md, applied to a generic industry profile rather than a researched company.",
+  "scores": [
+    {
+      "opportunity": "AI-assisted intake triage: answer/log every inbound lead (call or web form) immediately, draft a same-day follow-up, and flag anything needing an attorney's direct attention.",
+      "factor_scores": {
+        "business_impact": 4,
+        "automation_potential": 4,
+        "feasibility": 4,
+        "implementation_simplicity": 4,
+        "time_savings": 3,
+        "revenue_customer_impact": 4,
+        "data_availability": 2,
+        "risk_level": 4
+      },
+      "overall_score": 73,
+      "tier": "Medium",
+      "reasoning": "Targets two of the most severe verified industry gaps (1 in 3 calls unanswered, 70% lack follow-up) using the exact same proven pattern (AI draft + human approval) already built and tested for Nick's Plumbing. data_availability capped low because this is a generic profile, not a specific researched firm -- no individual complaint evidence exists here the way it does for Nick's Plumbing.",
+      "risks": ["Entirely industry-level evidence -- no specific firm was researched, so this cannot be presented as 'firm X has this problem,' only 'firms like this typically do.'"],
+      "research_confidence": "medium"
+    }
+  ],
+  "top_opportunity": {
+    "opportunity": "AI-assisted intake triage: answer/log every inbound lead (call or web form) immediately, draft a same-day follow-up, and flag anything needing an attorney's direct attention.",
+    "overall_score": 73,
+    "tier": "Medium",
+    "reasoning": "Only candidate scored for this seeded profession; strong industry evidence, generic (not firm-specific) application."
+  },
+  "recommendation": "This profession stays at 'seeded' depth per developer instruction (2026-08-15) -- no execution plan or automation build. This output exists to demonstrate that opportunity-score generalizes across professions using the same rubric, not to produce a client-ready proposal for a named firm.",
+  "limitations": ["Not a specific business -- generic industry profile only.", "No execution-plan or automation-builder pass planned for this profession."],
+  "approval_required": false
+}

@@ -1,0 +1,34 @@
+{
+  "input_source": "data/professions/dental_clinic/profile.json",
+  "scoring_date": "2026-08-15",
+  "scoring_note": "Seeded profession, not a specific business -- scored with the same 8-factor rubric as opportunity-score/SKILL.md, applied to a generic industry profile rather than a researched company.",
+  "scores": [
+    {
+      "opportunity": "AI-assisted scheduling/call overflow handling: when the phone line is busy or after hours, an AI step captures the patient's request and offers available slots or a callback, instead of the call simply going unanswered.",
+      "factor_scores": {
+        "business_impact": 3,
+        "automation_potential": 4,
+        "feasibility": 4,
+        "implementation_simplicity": 4,
+        "time_savings": 3,
+        "revenue_customer_impact": 3,
+        "data_availability": 2,
+        "risk_level": 4
+      },
+      "overall_score": 68,
+      "tier": "Medium",
+      "reasoning": "Targets a verified, specific mechanism (busy phone line loses the patient) with a buildable, low-risk automation. Scored slightly below the law-firm profile because the underlying business-impact evidence is somewhat less severe/quantified. data_availability capped low because this is a generic profile, not a specific researched clinic.",
+      "risks": ["Entirely industry-level evidence -- no specific clinic was researched."],
+      "research_confidence": "medium"
+    }
+  ],
+  "top_opportunity": {
+    "opportunity": "AI-assisted scheduling/call overflow handling: when the phone line is busy or after hours, an AI step captures the patient's request and offers available slots or a callback, instead of the call simply going unanswered.",
+    "overall_score": 68,
+    "tier": "Medium",
+    "reasoning": "Only candidate scored for this seeded profession; solid industry evidence, generic (not clinic-specific) application."
+  },
+  "recommendation": "This profession stays at 'seeded' depth per developer instruction (2026-08-15) -- no execution plan or automation build. This output exists to demonstrate that opportunity-score generalizes across professions using the same rubric, not to produce a client-ready proposal for a named clinic.",
+  "limitations": ["Not a specific business -- generic industry profile only.", "No execution-plan or automation-builder pass planned for this profession."],
+  "approval_required": false
+}

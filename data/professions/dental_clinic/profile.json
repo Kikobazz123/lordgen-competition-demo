@@ -1,0 +1,28 @@
+{
+  "profession": "Dental clinic (general practice)",
+  "depth": "seeded",
+  "business": null,
+  "note": "Generic industry profile, NOT a specific researched business -- unlike Nick's Plumbing & Air Conditioning, no named clinic was researched here. All facts below are industry-wide statistics gathered during the original candidate-business research pass (2026-08-13), before Nick's Plumbing was selected as the full-build demo business.",
+  "standard_needs": ["appointment scheduling", "call/phone-line coverage", "waitlist/reminder management", "patient communication"],
+  "facts": [
+    { "fact": "Dental practices face missed calls and difficulty getting appointments, driven by staffing shortages and high patient volume.", "type": "verified", "source": "TrueLark", "source_url": "https://truelark.com/solve-dental-appointment-scheduling-challenges/", "confidence": "high" },
+    { "fact": "Poor scheduling is one of the most considerable inefficiencies in dental practices -- many still use systems that produce double bookings and underutilized time slots.", "type": "verified", "source": "NetSuite", "source_url": "https://www.netsuite.com/portal/resource/articles/business-strategy/dental-scheduling.shtml", "confidence": "high" },
+    { "fact": "If the practice's phone line is busy (e.g. staff doing insurance checks) when a patient calls, the practice will likely lose that potential patient.", "type": "verified", "source": "NetSuite", "source_url": "https://www.netsuite.com/portal/resource/articles/business-strategy/dental-scheduling.shtml", "confidence": "high" },
+    { "fact": "More than 93% of patients who rated their satisfaction highest said communication with the practice was easy.", "type": "verified", "source": "TrueLark", "source_url": "https://truelark.com/solve-dental-appointment-scheduling-challenges/", "confidence": "high" }
+  ],
+  "pain_points": [
+    {
+      "description": "Busy phone lines and inefficient scheduling systems lose potential patients and create double-booking/underutilization, industry-wide.",
+      "type": "inference",
+      "evidence": "Industry-wide statistics above are verified; whether they apply to any specific unnamed clinic is an inference by design, since no specific clinic was researched for this seeded profile.",
+      "confidence": "medium"
+    }
+  ],
+  "automation_opportunities": [
+    {
+      "opportunity": "AI-assisted scheduling/call overflow handling: when the phone line is busy or after hours, an AI step captures the patient's request and offers available slots or a callback, instead of the call simply going unanswered.",
+      "rationale": "Directly targets the verified 'busy line loses the patient' gap and the double-booking/underutilization pattern, using the same AI-draft-plus-human-oversight structure already proven for Nick's Plumbing.",
+      "confidence": "medium"
+    }
+  ]
+}
