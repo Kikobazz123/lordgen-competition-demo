@@ -29,3 +29,9 @@ Three businesses, one engine — see `BUSINESS_PRESETS` in `app.js`:
 These are independent of the backend `data/professions/` registry (`docs/professions.md`), which covers a different pair (law firm intake, dental clinic) at `seeded` research depth. The two layers serve different purposes — see `docs/architecture.md`.
 
 Adding a new business here means adding one object to `BUSINESS_PRESETS` (name, industry, services, intake fields, a `classify()` rule, a `responseTemplate()`) — no other code changes.
+
+## Brand
+
+Uses LordGen's actual, established identity (not invented for this page) — see `../../Lordgen AI Skill builder/references/brand.md` for the pointer and full source guideline. Ink/Graphite/Regal Gold/Leaf/Brass/Bone/Slate palette, Archivo typeface (embedded locally in `archivo-fontface.css`, no external font CDN — same asset already built and tested for `lordgen-pitch`'s PDF pipeline), zero border-radius/square containers everywhere, flush-left text always, and the real logo mark (inlined SVG in `index.html`'s header, sourced from `../../Newsletter Demo/lordgen-ai-logo.svg`).
+
+**Not brand-ratified**: the four `--state-*` colors in `styles.css` (used for HOT LEAD / priority indicators) are this page's own proposal within the palette — the guideline explicitly flags UI state colors as not yet covered. Confirm before treating them as permanent.
