@@ -80,6 +80,11 @@ Tested via Playwright (headless Chromium) both before and after the brand rebuil
 
 ## Known open items
 
-- Target ClickUp workspace/list for implementation tasks (Phase 7).
-- GitHub repo pushed (Phase 6 report) — public, business-specific research excluded (see `.gitignore`).
-- `website/` hosting: deploying to Vercel (already-connected MCP, this project's own `tool-scout`-vetted choice) per direct request — see chat for the resulting URL once live.
+- Target ClickUp workspace/list for implementation tasks (Phase 7 — next up, not yet started).
+- `website/` deployed to Vercel (preview): `https://lordgen-ai-demo-zaxellimited360-1656s-projects.vercel.app`. **Open decision**: this preview URL is behind Vercel's default SSO wall — opens fine for the account owner, not for anyone else (e.g. judges). Asked whether to disable deployment protection (public link) or promote to a `production` deployment instead; not yet answered. The deployed copy also links Archivo from Google Fonts rather than embedding it (see `website/README.md` — the committed repo copy stays fully self-contained/offline-safe via `website/archivo-fontface.css`; only the hosted copy trades that for not pushing a 46KB blob through the deploy call).
+- Developer said they'll come back to `website/` for further edits/iteration — no specific scope given yet, just a heads-up for future sessions.
+- GitHub repo pushed and current through Phase 6 + the profession/website additions above — public, business-specific research excluded (see `.gitignore`).
+
+## Resuming in a new session
+
+Everything needed to continue lives on disk, not in any one conversation: this file, `README.md`, `data/`, `workflows/`, `website/`, and the memory files under this environment's memory system (auto-commit-to-GitHub preference, repo URL/exclusion policy). A fresh session should read `CLAUDE.md` + this file first (per `CLAUDE.md` §5's own initial-session rule), which is enough to re-orient: Phases 1–6 done for Nick's Plumbing, profession-config layer + website built and pushed, Phase 7 (ClickUp integration) next, plus the two open items directly above.
