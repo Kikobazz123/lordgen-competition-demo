@@ -29,7 +29,9 @@ tests/               tests for each pipeline stage
 
 ## Build Status
 
-Phases 1–5 complete for the locked demo business (`docs/demo-business.md`: Nick's Plumbing & Air Conditioning) — research, opportunity score, proposal, and execution plan are all generated and validated (`data/`, `proposal.md`, `execution-plan.md`). Phase 6 (Automation Builder) methodology is written (`.claude/skills/automation-builder/SKILL.md`, `docs/n8n-reference.md`) but blocked on connecting n8n's MCP server — see Setup below.
+Phases 1–6 complete for the locked demo business (Nick's Plumbing & Air Conditioning): research through a tested, unpublished n8n starter automation (`workflows/competition-demo.json`). Skills also run against a profession-config layer (`docs/professions.md`) proving they generalize — see that doc for depth/status per profession.
+
+An interactive demo website (`website/`) is also built: a single static page, no framework/build step, simulating the same workflow shape across three presets (Plumbing, Real Estate, Salon) client-side — see `website/README.md`.
 
 ## Setup
 

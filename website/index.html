@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LordGen AI — Business Automation, Adapted to You</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="brand">
+      <span class="brand-mark">LG</span>
+      <span class="brand-name">LordGen <span class="brand-ai">AI</span></span>
+    </div>
+    <nav class="header-nav">
+      <a href="#demo">Demo</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="https://github.com/Kikobazz123/lordgen-competition-demo" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container hero-inner">
+    <p class="hero-eyebrow">AI Business Automation &amp; Intelligence Platform</p>
+    <h1>AI Automation Built Around Your Business</h1>
+    <p class="hero-sub">
+      LordGen AI turns an incoming inquiry into a structured workflow &mdash; lead qualification,
+      an intelligent response, a follow-up action, and a business record &mdash; automatically.
+      The same engine adapts to plumbing, real estate, and salon businesses without being rebuilt.
+    </p>
+    <div class="hero-ctas">
+      <a href="#demo" class="btn btn-primary">Launch Demo</a>
+      <a href="#how-it-works" class="btn btn-secondary">See How It Works</a>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works" id="how-it-works">
+  <div class="container">
+    <h2>One engine. Any business.</h2>
+    <div class="story-flow">
+      <div class="story-step">A business receives an inquiry</div>
+      <div class="story-arrow">&darr;</div>
+      <div class="story-step">LordGen AI understands the business context</div>
+      <div class="story-arrow">&darr;</div>
+      <div class="story-step">AI analyzes the inquiry</div>
+      <div class="story-arrow">&darr;</div>
+      <div class="story-step">The system qualifies the lead</div>
+      <div class="story-arrow">&darr;</div>
+      <div class="story-step">AI generates an appropriate response</div>
+      <div class="story-arrow">&darr;</div>
+      <div class="story-step">The workflow determines the next action</div>
+      <div class="story-arrow">&darr;</div>
+      <div class="story-step story-step-final">A structured, actionable result</div>
+    </div>
+  </div>
+</section>
+
+<section class="demo-section" id="demo">
+  <div class="container">
+    <div class="demo-heading">
+      <h2>Try the Demo</h2>
+      <p>Pick a business. The intake form, AI analysis, and workflow adapt &mdash; same engine, different context.</p>
+    </div>
+
+    <div class="business-selector" id="businessSelector" role="tablist" aria-label="Choose a business type"></div>
+
+    <div class="demo-grid">
+      <div class="panel intake-panel">
+        <div class="panel-header">
+          <span class="panel-eyebrow" id="intakeEyebrow">New Inquiry</span>
+          <h3 id="intakeBusinessName">&nbsp;</h3>
+        </div>
+        <form id="intakeForm" novalidate>
+          <div class="form-fields" id="formFields"></div>
+          <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Submit Inquiry</button>
+          <p class="form-note">Demo only &mdash; no real message is sent. <a href="#" id="demoModeInfo">What does this simulate?</a></p>
+        </form>
+      </div>
+
+      <div class="panel processing-panel" id="processingPanel" hidden>
+        <div class="panel-header"><span class="panel-eyebrow">Processing</span><h3>LordGen AI is working</h3></div>
+        <ul class="processing-steps" id="processingSteps"></ul>
+      </div>
+
+      <div class="panel analysis-panel" id="analysisPanel" hidden>
+        <div class="panel-header"><span class="panel-eyebrow">AI Analysis</span><h3>Result</h3></div>
+        <div class="analysis-grid">
+          <div class="analysis-tile">
+            <span class="tile-label">Lead Status</span>
+            <span class="tile-value" id="leadStatus">&mdash;</span>
+          </div>
+          <div class="analysis-tile">
+            <span class="tile-label">Intent</span>
+            <span class="tile-value" id="leadIntent">&mdash;</span>
+          </div>
+          <div class="analysis-tile">
+            <span class="tile-label">Priority</span>
+            <span class="tile-value" id="leadPriority">&mdash;</span>
+          </div>
+          <div class="analysis-tile">
+            <span class="tile-label">Recommended Action</span>
+            <span class="tile-value" id="leadAction">&mdash;</span>
+          </div>
+        </div>
+        <div class="ai-response">
+          <span class="tile-label">AI-Drafted Response</span>
+          <p id="aiResponseText">&mdash;</p>
+          <p class="approval-note">&#9989; Held for human approval before sending &mdash; same rule the real, tested automation follows.</p>
+        </div>
+        <button class="btn btn-secondary btn-block" id="resetBtn">Try Another Inquiry</button>
+      </div>
+    </div>
+
+    <div class="workflow-viz-wrap">
+      <h3>Workflow</h3>
+      <div class="workflow-viz" id="workflowViz"></div>
+    </div>
+
+    <div class="feed-dashboard-grid">
+      <div class="panel feed-panel">
+        <div class="panel-header"><span class="panel-eyebrow">Live</span><h3>Activity Feed</h3></div>
+        <ul class="activity-feed" id="activityFeed">
+          <li class="feed-empty">No activity yet &mdash; submit an inquiry to see it here.</li>
+        </ul>
+      </div>
+      <div class="panel dashboard-panel">
+        <div class="panel-header"><span class="panel-eyebrow">Overview</span><h3>Business Dashboard</h3></div>
+        <div class="dashboard-metrics" id="dashboardMetrics"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>LordGen AI &mdash; competition demo. This page simulates the AI workflow client-side; the real automation for Nick's Plumbing &amp; Air Conditioning is a separately built and tested n8n workflow (see the project repo).</p>
+  </div>
+</footer>
+
+<div class="modal" id="demoModeModal" hidden>
+  <div class="modal-card">
+    <h3>What this demo actually does</h3>
+    <p>This page does not call any live service. Selecting a business, submitting the form, and everything you see in the AI Analysis panel, workflow, activity feed, and dashboard runs entirely in your browser using pre-defined business logic &mdash; no API keys, no real emails sent, no external system contacted.</p>
+    <p>It's a faithful simulation of the same workflow shape LordGen AI actually built and tested for Nick's Plumbing &amp; Air Conditioning as a real, working n8n automation (AI drafting &rarr; human approval gate &rarr; send &rarr; log). That real build lives in the project's GitHub repo, not in this browser tab.</p>
+    <button class="btn btn-primary" id="closeModal">Got it</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

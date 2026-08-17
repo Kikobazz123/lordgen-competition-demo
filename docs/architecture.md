@@ -70,8 +70,12 @@ Phase 7 (Integrations — ClickUp, n8n, GitHub) sits between Automation Builder 
 
 `business-research`, `opportunity-score`, and `proposal-generator` are not hard-coded to plumbing — they operate on whichever profession/business profile they're pointed at. Only **plumbing_hvac (Nick's Plumbing & Air Conditioning)** is a `full` build (real research through automation); two more professions exist at `seeded` depth (generic industry profiles, no execution plan or automation) to demonstrate the skills generalize. Full detail: `docs/professions.md`. This was merged in at reduced scope from `LORDGEN_UPGRADE_SPEC.md` — see that doc's "Why this scope" section for what was deliberately *not* adopted (multi-profession web UI, adaptive forms, PDF reports) and why.
 
+## Interactive demo website (added 2026-08-17)
+
+`website/` — a single static HTML/CSS/vanilla-JS page (no framework, no build step, no backend), simulating the same workflow shape client-side across three presets: Plumbing (Nick's Plumbing & Air Conditioning — name/services only, no private research reproduced), Real Estate (Harborview Realty Group, illustrative), Salon (Luxe Studio Salon & Beauty, illustrative). Does not call the real n8n webhook/OpenAI/Gmail — deliberately simulated, per `CLAUDE.md` §9/§16-17 and the site's own in-page disclosure ("What does this simulate?"). Independent of the `data/professions/` registry above — see `website/README.md` for why. Tested via Playwright (headless Chromium): all three presets, empty-field validation, mobile viewport, zero console errors — two real bugs found and fixed during testing (a `[hidden]`/CSS `display` cascade conflict on the info modal and the processing panel, both silently staying visible/interactive despite the `hidden` attribute).
+
 ## Known open items
 
 - Target ClickUp workspace/list for implementation tasks (Phase 7).
 - GitHub repo pushed (Phase 6 report) — public, business-specific research excluded (see `.gitignore`).
-- Whether/how to build a public-facing website — explicitly deferred, to be discussed separately (not assumed from `LORDGEN_UPGRADE_SPEC.md`).
+- Whether/how to host `website/` publicly (e.g. GitHub Pages) — not done, would need explicit approval per `CLAUDE.md` §10 (publishing externally).
