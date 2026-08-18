@@ -1,5 +1,5 @@
 {
-  "_status": "prepared, not yet executed -- n8n MCP unreachable when workflow-qa last ran (2026-08-17)",
+  "_status": "live-verified 2026-08-18, execution id 9 -- lastNodeExecuted 'Log: Approved & Sent', row id 5 written to the live Data Table",
   "category": "Happy path",
   "pin_data": {
     "Estimate Submitted (Webhook)": [
@@ -10,7 +10,11 @@
     ],
     "Request Dispatcher Approval": [
       { "json": { "data": { "approved": true } } }
+    ],
+    "Send Summary To Customer": [
+      { "json": { "id": "qa-test-message-id", "threadId": "qa-test-thread-id" } }
     ]
   },
-  "expected_terminal_node": "Log: Approved & Sent"
+  "expected_terminal_node": "Log: Approved & Sent",
+  "_note": "Send Summary To Customer must be pinned explicitly -- it has no credential attached, so test_workflow's documented auto-pin behavior for credentialed nodes did not apply; the first run without this pin errored with 'Node does not have any credentials set'."
 }

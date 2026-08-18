@@ -1,5 +1,5 @@
 {
-  "_status": "prepared, not yet executed -- n8n MCP unreachable when workflow-qa last ran (2026-08-17)",
+  "_status": "live-verified 2026-08-18, execution id 11 -- lastNodeExecuted 'End (AI Failed)', row id 7 written to the live Data Table",
   "category": "AI failure",
   "pin_data": {
     "Estimate Submitted (Webhook)": [

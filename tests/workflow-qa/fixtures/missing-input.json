@@ -1,5 +1,5 @@
 {
-  "_status": "prepared, not yet executed -- n8n MCP unreachable when workflow-qa last ran (2026-08-17)",
+  "_status": "live-verified 2026-08-18, execution id 10 -- lastNodeExecuted 'End (Missing Input)', row id 6 written to the live Data Table",
   "category": "Missing input",
   "pin_data": {
     "Estimate Submitted (Webhook)": [
