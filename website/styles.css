@@ -263,12 +263,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* --- Hero: structural depth instead of a flat field ----------------------
-   A hairline column grid echoing the mark's five vertical members, faded out
-   downward so it reads as substrate rather than decoration. Hard edges only. */
+   A warm radial glow (gold, low-opacity) gives the field a light source and
+   focal point instead of reading as flat black; a hairline column grid
+   echoing the mark's five vertical members sits underneath as substrate.
+   A faint corner vignette deepens the edges for print-like polish. Hard
+   edges only -- no blur/radius beyond the gradients themselves. */
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(176deg, var(--graphite) 0%, var(--ink) 46%);
+  background:
+    radial-gradient(ellipse 780px 460px at 14% -8%, rgba(201,162,75,0.14), transparent 62%),
+    radial-gradient(ellipse 620px 420px at 100% 0%, rgba(240,226,188,0.05), transparent 65%),
+    linear-gradient(176deg, var(--graphite) 0%, var(--ink) 58%);
 }
 .hero::before {
   content: '';
@@ -276,9 +282,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   inset: 0;
   pointer-events: none;
   background: repeating-linear-gradient(90deg, var(--brass) 0 1px, transparent 1px 112px);
-  opacity: 0.16;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 82%);
-          mask-image: linear-gradient(180deg, #000 0%, transparent 82%);
+  opacity: 0.22;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 72%);
+          mask-image: linear-gradient(180deg, #000 0%, transparent 72%);
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 900px 400px at 50% 130%, rgba(0,0,0,0.35), transparent 70%);
 }
 .hero-inner { position: relative; }
 

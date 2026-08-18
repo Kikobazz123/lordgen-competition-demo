@@ -47,7 +47,7 @@ const BUSINESS_PRESETS = {
   plumbing: {
     id: 'plumbing',
     icon: '\u{1F527}',
-    business_name: "Nick's Plumbing & Air Conditioning",
+    business_name: "Ridgeline Plumbing & Air",
     industry: 'Plumbing & HVAC',
     tagline: 'Emergency & scheduled plumbing / HVAC services',
     services: ['Emergency plumbing', 'Leak repair', 'Drain cleaning', 'Water heater', 'Pipe repair', 'Installation'],
@@ -78,7 +78,7 @@ const BUSINESS_PRESETS = {
       return { status, intent, priority, action };
     },
     responseTemplate(data) {
-      return `Hi ${data.name}, thanks for reaching out to Nick's Plumbing & Air Conditioning about ${data.service.toLowerCase()}. `
+      return `Hi ${data.name}, thanks for reaching out to Ridgeline Plumbing & Air about ${data.service.toLowerCase()}. `
         + `We've logged your request for ${data.location}${data.appointment ? ` and noted your preferred time (${data.appointment})` : ''}. `
         + `A technician will follow up shortly to confirm details before anything is scheduled or billed.`;
     }

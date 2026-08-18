@@ -16,13 +16,13 @@ then visit `http://localhost:8000`.
 
 This page is a **client-side simulation**. Selecting a business, submitting the intake form, and everything in the AI Analysis panel / workflow visualization / activity feed / dashboard runs entirely in the browser using rule-based JavaScript (`app.js`) — there are no network calls, no API keys, and nothing is actually sent anywhere. Click "What does this simulate?" under the intake form on the live page for the same explanation shown to visitors.
 
-It reproduces the *shape* of the real automation already built and tested for Nick's Plumbing & Air Conditioning as a working n8n workflow (`workflows/competition-demo.json`, AI draft → human approval gate → send → log) — it does not call that workflow live. Wiring a public webpage directly to a real webhook that sends real approval emails would be a reliability and abuse risk for no benefit to the demo story.
+It reproduces the *shape* of the real automation already built and tested for an actual local plumbing & HVAC business as a working n8n workflow (`workflows/competition-demo.json`, AI draft → human approval gate → send → log) — it does not call that workflow live. Wiring a public webpage directly to a real webhook that sends real approval emails would be a reliability and abuse risk for no benefit to the demo story.
 
 ## Presets
 
 Three businesses, one engine — see `BUSINESS_PRESETS` in `app.js`:
 
-- **Plumbing** — Nick's Plumbing & Air Conditioning. Business name and service categories only; the detailed research behind the real automation stays local/private (see the repo root `.gitignore`) and isn't reproduced here.
+- **Plumbing** — Ridgeline Plumbing & Air (illustrative name, fully simulated — renamed 2026-08-18 so the public demo never uses a real, identifiable business as the addressee of a visitor-submitted inquiry form). The real automation this preset's shape is modeled on was built and tested for an actual local plumbing & HVAC business; that business's identity and detailed research stay local/private (see the repo root `.gitignore`) and aren't reproduced here.
 - **Real Estate** — Harborview Realty Group (illustrative name, fully simulated).
 - **Salon** — Luxe Studio Salon & Beauty (illustrative name, fully simulated).
 
