@@ -83,7 +83,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   padding: 14px 26px; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.01em;
   cursor: pointer; border: 1px solid transparent; transition: opacity .12s ease, background .15s ease, border-color .15s ease;
 }
-.btn:hover { text-decoration: none; opacity: 0.92; }
+.btn:hover { text-decoration: none; }
 .btn-primary { background: var(--gold); color: var(--ink); }
 .btn-secondary { background: transparent; color: var(--bone); border-color: var(--brass); }
 .btn-secondary:hover { border-color: var(--gold); color: var(--gold); opacity: 1; }
@@ -239,4 +239,93 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .analysis-grid { grid-template-columns: 1fr; }
   .dashboard-metrics { grid-template-columns: 1fr 1fr; }
   .header-nav { gap: 18px; font-size: 0.78rem; }
+}
+
+/* ===========================================================================
+   Design + accessibility pass
+   Applied within the ratified identity, not on top of a new one: no new
+   typeface, no new palette entries, zero-radius and flush-left discipline
+   preserved. The hero texture is derived from the logo mark's own vertical
+   bar rhythm rather than an imported decorative motif.
+   =========================================================================== */
+
+/* A11y -- Lighthouse `link-in-text-block`: an inline link inside a paragraph
+   cannot rely on color alone to be distinguishable from surrounding text. */
+.form-note a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+/* Body copy gets better rag now that headings already use `balance`. */
+.hero-sub, .demo-heading p, .footer-inner p, .modal-card p, .ai-response p {
+  text-wrap: pretty;
+}
+
+/* --- Hero: structural depth instead of a flat field ----------------------
+   A hairline column grid echoing the mark's five vertical members, faded out
+   downward so it reads as substrate rather than decoration. Hard edges only. */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(176deg, var(--graphite) 0%, var(--ink) 46%);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(90deg, var(--brass) 0 1px, transparent 1px 112px);
+  opacity: 0.16;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 82%);
+          mask-image: linear-gradient(180deg, #000 0%, transparent 82%);
+}
+.hero-inner { position: relative; }
+
+/* --- One orchestrated page load, then stop -------------------------------
+   `both` fill-mode matters: the reduced-motion block above collapses duration
+   to ~0, which lands every element on its final state instead of hiding it. */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero-eyebrow,
+.hero h1,
+.hero-sub,
+.hero-ctas { animation: riseIn 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.hero-eyebrow { animation-delay: 0.04s; }
+.hero h1      { animation-delay: 0.12s; }
+.hero-sub     { animation-delay: 0.22s; }
+.hero-ctas    { animation-delay: 0.32s; }
+
+/* A scroll-driven reveal was tried here and removed: leaving `.story-step`
+   below full opacity outside the animation range made axe fail color-contrast
+   on the step markers, and it would have hidden copy for anyone landing
+   mid-page. Not worth a decorative gain. */
+
+/* --- Micro-interactions with intent, not an opacity dip ------------------ */
+.btn-primary:hover { background: var(--leaf); color: var(--ink); }
+.btn:active { transform: translateY(1px); }
+
+.business-tab { position: relative; }
+.business-tab::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s ease;
+}
+.business-tab:not(.active):hover::after { transform: scaleX(1); }
+
+/* The workflow is a single pipeline, so it should read as one continuous line.
+   Wrapping it stranded a trailing "→" at the end of the first row; scrolling
+   the strip keeps the sequence intact and contains the overflow to this box. */
+.workflow-viz {
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
 }

@@ -218,8 +218,13 @@ function selectBusiness(id) {
   resetDemoPanels();
 }
 
+// Contact fields carry the same ids across all three presets, so browsers can
+// autofill them. Without this Chrome reports the inputs as missing autocomplete.
+const AUTOCOMPLETE = { name: 'name', phone: 'tel', email: 'email' };
+
 function fieldHtml(field) {
   const req = field.required ? 'required' : '';
+  const auto = AUTOCOMPLETE[field.id] ? ` autocomplete="${AUTOCOMPLETE[field.id]}"` : '';
   if (field.type === 'select') {
     const opts = field.options.map((o) => `<option value="${o}">${o}</option>`).join('');
     return `<select id="f_${field.id}" name="${field.id}" ${req}><option value="">Select...</option>${opts}</select>`;
@@ -227,7 +232,7 @@ function fieldHtml(field) {
   if (field.type === 'textarea') {
     return `<textarea id="f_${field.id}" name="${field.id}" ${req}></textarea>`;
   }
-  return `<input type="${field.type}" id="f_${field.id}" name="${field.id}" ${req}>`;
+  return `<input type="${field.type}" id="f_${field.id}" name="${field.id}"${auto} ${req}>`;
 }
 
 function renderIntakeForm() {
@@ -424,4 +429,12 @@ function init() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// The script is deferred and sits at the end of <body>, so the DOM is already
+// parsed by the time this runs. Calling init() straight away paints the
+// JS-populated containers (selector, form, dashboard, workflow) before first
+// paint instead of one tick after it, which is what caused the layout shift.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
