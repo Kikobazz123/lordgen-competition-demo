@@ -1,0 +1,10 @@
+{
+  "_status": "prepared, not yet executed -- n8n MCP unreachable when workflow-qa last ran (2026-08-17)",
+  "category": "Missing input",
+  "pin_data": {
+    "Estimate Submitted (Webhook)": [
+      { "json": { "body": { "jobId": "QA-TEST-MISSING-01", "customerContact": "", "scope": "Replace kitchen sink shutoff valve", "price": "$180-$220" } } }
+    ]
+  },
+  "expected_terminal_node": "End (Missing Input)"
+}

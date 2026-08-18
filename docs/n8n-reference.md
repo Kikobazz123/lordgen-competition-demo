@@ -2,7 +2,7 @@
 
 Source of truth for what `automation-builder` (Phase 6) can actually do once n8n's MCP server is connected. Tool names and descriptions below are taken directly from n8n's own documentation ([MCP server tools reference](https://docs.n8n.io/connect/connect-to-n8n-mcp-server/mcp-server-tools-reference), fetched 2026-08-14) — not guessed. **Reconfirm via `ToolSearch` once actually connected**, since exact availability can vary by n8n version/plan (`CLAUDE.md` §8: never assume an MCP tool exists).
 
-Connection status: **not connected**. See root `README.md` / `.env.example` for setup steps.
+Connection status: **connected** (confirmed 2026-08-15 via `search_workflows`; re-confirmed live 2026-08-17). Workflow `055TNXGtfItIgqf1` (`workflows/competition-demo.json`) exists in the instance, unpublished. See root `README.md` / `.env.example` for setup steps if reconnecting in a new environment.
 
 ## Tool catalog
 

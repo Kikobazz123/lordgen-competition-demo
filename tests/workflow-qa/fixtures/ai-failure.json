@@ -1,0 +1,13 @@
+{
+  "_status": "prepared, not yet executed -- n8n MCP unreachable when workflow-qa last ran (2026-08-17)",
+  "category": "AI failure",
+  "pin_data": {
+    "Estimate Submitted (Webhook)": [
+      { "json": { "body": { "jobId": "QA-TEST-AIFAIL-01", "customerContact": "qa.customer@example.com", "scope": "Replace kitchen sink shutoff valve", "price": "$180-$220" } } }
+    ],
+    "Draft Estimate Summary": [
+      { "json": { "output": "" } }
+    ]
+  },
+  "expected_terminal_node": "End (AI Failed)"
+}

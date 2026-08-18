@@ -1,0 +1,16 @@
+{
+  "_status": "prepared, not yet executed -- n8n MCP unreachable when workflow-qa last ran (2026-08-17)",
+  "category": "Happy path",
+  "pin_data": {
+    "Estimate Submitted (Webhook)": [
+      { "json": { "body": { "jobId": "QA-TEST-HAPPY-01", "customerContact": "qa.customer@example.com", "scope": "Replace kitchen sink shutoff valve", "price": "$180-$220" } } }
+    ],
+    "Draft Estimate Summary": [
+      { "json": { "output": "Your estimate for job QA-TEST-HAPPY-01: we'll replace the kitchen sink shutoff valve. Estimated price range is $180-$220." } }
+    ],
+    "Request Dispatcher Approval": [
+      { "json": { "data": { "approved": true } } }
+    ]
+  },
+  "expected_terminal_node": "Log: Approved & Sent"
+}
