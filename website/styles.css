@@ -463,3 +463,67 @@ body {
   transform: none;
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
+
+/* ===========================================================================
+   Business Diagnostic Demo (P0 live trigger)
+   Additive section -- reuses .panel/.panel-header/.panel-eyebrow/.tile-label/
+   .workflow-viz/.wf-step/.wf-arrow/.btn/.business-tab from above rather than
+   inventing new primitives. New classes below only cover what those don't.
+   =========================================================================== */
+.diagnostic-section { padding: 0 0 96px; border-top: 1px solid var(--brass); }
+.diagnostic-section .demo-heading { padding-top: 72px; }
+
+.diag-request-panel { margin-bottom: 32px; }
+.diag-request-readout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--brass);
+}
+.diag-request-readout p { color: var(--bone); font-size: 0.92rem; margin: 5px 0 0; }
+@media (max-width: 600px) { .diag-request-readout { grid-template-columns: 1fr; } }
+
+.diag-not-live-note {
+  color: var(--slate); font-size: 0.85rem; background: var(--ink);
+  border: 1px solid var(--brass); padding: 12px 14px; margin: 0 0 18px;
+}
+
+.diag-status-wrap { margin: 32px 0; }
+.diag-error {
+  color: var(--state-critical); font-size: 0.9rem; margin: 16px 0 0;
+  background: var(--graphite); border: 1px solid var(--state-critical); padding: 12px 14px;
+}
+
+.diag-results-panel, .diag-agents-panel, .diag-spec-panel { margin-bottom: 24px; }
+
+.diag-findings-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--brass); margin-bottom: 16px; }
+@media (max-width: 860px) { .diag-findings-grid { grid-template-columns: 1fr; } }
+.diag-finding-col { background: var(--ink); padding: 16px; }
+.diag-finding-col h4 {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gold); margin: 0 0 12px;
+}
+.diag-finding-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.diag-finding-title { font-size: 0.9rem; font-weight: 700; color: var(--bone); }
+.diag-finding-col p { font-size: 0.82rem; color: var(--slate); margin: 4px 0 0; }
+.diag-badge {
+  display: inline-block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; padding: 2px 7px; margin-top: 4px; border: 1px solid var(--brass); color: var(--slate);
+}
+.diag-badge-medium, .diag-badge-high { color: var(--state-attention); border-color: var(--state-attention); }
+.diag-badge-low { color: var(--slate); }
+.diag-sources { color: var(--slate); font-size: 0.78rem; margin: 0; }
+
+.diag-agent-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 20px; background: var(--brass); }
+.diag-agent-option {
+  display: flex; align-items: center; gap: 10px; background: var(--ink);
+  padding: 12px 14px; font-size: 0.9rem; color: var(--bone); cursor: pointer;
+}
+.diag-agent-option input { accent-color: var(--gold); }
+
+.diag-spec-grid { display: flex; flex-direction: column; gap: 18px; margin-bottom: 16px; }
+.diag-spec-grid p, .diag-spec-grid li { color: var(--bone); font-size: 0.88rem; }
+.diag-spec-grid ul, .diag-spec-grid ol { margin: 6px 0 0; padding-left: 20px; }
+.diag-spec-grid li { margin-bottom: 4px; }
+.diag-spec-status {
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--state-good); margin: 0;
+}

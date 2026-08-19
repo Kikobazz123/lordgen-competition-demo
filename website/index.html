@@ -28,6 +28,7 @@
     </a>
     <nav class="header-nav">
       <a href="#demo">Demo</a>
+      <a href="#diagnostic-demo">Diagnostic</a>
       <a href="#how-it-works">How It Works</a>
       <a href="https://github.com/Kikobazz123/lordgen-competition-demo" target="_blank" rel="noopener">GitHub</a>
     </nav>
@@ -140,6 +141,93 @@
         <div class="panel-header"><span class="panel-eyebrow">Overview</span><h3>Business Dashboard</h3></div>
         <div class="dashboard-metrics" id="dashboardMetrics"></div>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="diagnostic-section" id="diagnostic-demo">
+  <div class="container">
+    <div class="demo-heading">
+      <h2>Business Diagnostic Demo</h2>
+      <p>A second, live entry point into the same engine &mdash; LordGen researches a business, classifies what it finds into three categories, and turns your approved picks into a real automation specification. Wired to a live, running n8n workflow for the plumbing business only in this competition build; the other two use the simulated New Inquiry demo above.</p>
+    </div>
+
+    <div class="business-selector" id="diagBusinessSelector" role="tablist" aria-label="Choose a business for the diagnostic demo"></div>
+
+    <div class="panel diag-request-panel" data-reveal>
+      <div class="panel-header">
+        <span class="panel-eyebrow" id="diagEyebrow">Live Diagnostic</span>
+        <h3 id="diagBusinessName">&nbsp;</h3>
+      </div>
+      <div class="diag-request-readout">
+        <div>
+          <span class="tile-label">Reported Problem</span>
+          <p id="diagProblem">&mdash;</p>
+        </div>
+        <div>
+          <span class="tile-label">Special Request</span>
+          <p id="diagSpecialRequest">&mdash;</p>
+        </div>
+      </div>
+      <p class="diag-not-live-note" id="diagNotLiveNote" hidden>Live diagnostic research is only wired for the plumbing demo business in this competition build. See the New Inquiry demo above, which fully simulates this business.</p>
+      <button type="button" class="btn btn-primary btn-block" id="runDiagnosticBtn">Run Diagnostic</button>
+    </div>
+
+    <div class="diag-status-wrap" data-reveal>
+      <div class="workflow-viz" id="diagStatusViz"></div>
+      <p class="diag-error" id="diagError" hidden></p>
+    </div>
+
+    <div class="panel diag-results-panel" id="diagResultsPanel" hidden data-reveal>
+      <div class="panel-header"><span class="panel-eyebrow">Findings</span><h3>Three Categories</h3></div>
+      <div class="diag-findings-grid">
+        <div class="diag-finding-col">
+          <h4>Standard</h4>
+          <ul id="diagStandardList"></ul>
+        </div>
+        <div class="diag-finding-col">
+          <h4>Research</h4>
+          <ul id="diagResearchList"></ul>
+        </div>
+        <div class="diag-finding-col">
+          <h4>Client Requested</h4>
+          <ul id="diagClientRequestedList"></ul>
+        </div>
+      </div>
+      <p class="diag-sources" id="diagSources"></p>
+    </div>
+
+    <div class="panel diag-agents-panel" id="diagAgentsPanel" hidden data-reveal>
+      <div class="panel-header"><span class="panel-eyebrow">Recommended Agents</span><h3>Select What to Build</h3></div>
+      <div class="diag-agent-list" id="diagAgentList"></div>
+      <button type="button" class="btn btn-primary btn-block" id="approveDiagnosticBtn">Approve Selected</button>
+    </div>
+
+    <div class="panel diag-spec-panel" id="diagSpecPanel" hidden data-reveal>
+      <div class="panel-header"><span class="panel-eyebrow">Automation Builder</span><h3 id="diagSpecName">&mdash;</h3></div>
+      <div class="diag-spec-grid">
+        <div>
+          <span class="tile-label">Trigger</span>
+          <p id="diagSpecTrigger">&mdash;</p>
+        </div>
+        <div>
+          <span class="tile-label">Required Information</span>
+          <ul id="diagSpecInputs"></ul>
+        </div>
+        <div>
+          <span class="tile-label">Steps</span>
+          <ol id="diagSpecSteps"></ol>
+        </div>
+        <div>
+          <span class="tile-label">Integrations</span>
+          <ul id="diagSpecIntegrations"></ul>
+        </div>
+        <div>
+          <span class="tile-label">Developer Notes</span>
+          <ul id="diagSpecNotes"></ul>
+        </div>
+      </div>
+      <p class="diag-spec-status" id="diagSpecStatus">&mdash;</p>
     </div>
   </div>
 </section>

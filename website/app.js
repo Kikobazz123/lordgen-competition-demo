@@ -31,6 +31,24 @@ const PROCESSING_MESSAGES = [
 
 const URGENCY_KEYWORDS = ['emergency', 'urgent', 'asap', 'today', 'now', 'flooding', 'flooded', 'burst', 'immediately', 'no power', "can't wait"];
 
+// Business Diagnostic Demo (P0 live trigger) -- see docs/architecture.md's
+// "Pending: Competition Live-Demo Trigger" section. Real state transitions
+// only, per LORDGEN_COMPETITION_LIVE_DEMO_ADDENDUM.md section 13: every label
+// below is set at the moment of a real event (button click, fetch sent, fetch
+// resolved) -- never on a timer.
+const DIAGNOSTIC_STATUS_STEPS = [
+  'RECEIVED', 'RESEARCH RUNNING', 'RESEARCH COMPLETE', 'DIAGNOSTIC READY',
+  'AWAITING APPROVAL', 'APPROVED', 'BUILDING AUTOMATION', 'AUTOMATION SPEC READY', 'DEVELOPER BRIEF READY'
+];
+
+// Per-business template menu, addendum section 11. The automation-builder
+// workflow turns the selected subset into a real specification.
+const AUTOMATION_TEMPLATES = {
+  plumbing: ['Lead Capture Agent', 'Sales Follow-Up Agent', 'WhatsApp Response Agent', 'Appointment Agent', 'CRM Handoff'],
+  real_estate: ['Property Lead Agent', 'Lead Qualification Agent', 'Viewing Scheduler', 'Follow-Up Agent', 'CRM Handoff'],
+  salon: ['Booking Agent', 'WhatsApp Customer Agent', 'Reminder Agent', 'Retention Agent', 'CRM Handoff']
+};
+
 function scanForUrgencyBoost(formData) {
   const text = Object.values(formData).join(' ').toLowerCase();
   return URGENCY_KEYWORDS.some((kw) => text.includes(kw));
@@ -51,6 +69,9 @@ const BUSINESS_PRESETS = {
     industry: 'Plumbing & HVAC',
     tagline: 'Emergency & scheduled plumbing / HVAC services',
     services: ['Emergency plumbing', 'Leak repair', 'Drain cleaning', 'Water heater', 'Pipe repair', 'Installation'],
+    problem: "A customer was shown one price on the technician's tablet and billed a different, higher amount later, with no easy way to get a readable copy of the terms.",
+    specialRequest: '',
+    hasRealResearch: true,
     intake_fields: [
       { id: 'name', label: 'Customer Name', type: 'text', required: true },
       { id: 'phone', label: 'Phone', type: 'tel', required: true },
@@ -91,6 +112,9 @@ const BUSINESS_PRESETS = {
     industry: 'Real Estate & Property Services',
     tagline: 'Buy, sell, rent, and property management inquiries',
     services: ['Buy', 'Sell', 'Rent', 'Property Management'],
+    problem: 'Leads go cold in the gap between an initial inquiry and the first agent follow-up.',
+    specialRequest: 'Faster, WhatsApp-style follow-up on new leads.',
+    hasRealResearch: false,
     intake_fields: [
       { id: 'name', label: 'Name', type: 'text', required: true },
       { id: 'phone', label: 'Phone', type: 'tel', required: true },
@@ -137,6 +161,9 @@ const BUSINESS_PRESETS = {
     industry: 'Salon & Beauty',
     tagline: 'Hair, nails, makeup, and beauty consultations',
     services: ['Hair styling', 'Braids', 'Nails', 'Makeup', 'Facial', 'Beauty consultation'],
+    problem: "New clients often book once and don't return, with no structured rebooking outreach.",
+    specialRequest: 'Automatic reminders and a way to bring past clients back.',
+    hasRealResearch: false,
     intake_fields: [
       { id: 'name', label: 'Name', type: 'text', required: true },
       { id: 'phone', label: 'Phone', type: 'tel', required: true },
@@ -179,7 +206,13 @@ BUSINESS_PRESETS.salon.intake_fields.find((f) => f.id === 'service').options = B
 
 const state = {
   currentPresetId: 'plumbing',
-  metrics: { newLeads: 0, qualifiedLeads: 0, followUps: 0, appointments: 0, conversionOpportunity: 0 }
+  metrics: { newLeads: 0, qualifiedLeads: 0, followUps: 0, appointments: 0, conversionOpportunity: 0 },
+  diagnostic: {
+    presetId: 'plumbing',
+    result: null,
+    selectedAgents: [],
+    buildResult: null
+  }
 };
 
 const METRIC_DEFS = [
@@ -253,10 +286,10 @@ function renderIntakeForm() {
   renderWorkflowViz(-1);
 }
 
-function renderWorkflowViz(activeIndex) {
-  const el = document.getElementById('workflowViz');
+function renderStepViz(elId, steps, activeIndex) {
+  const el = document.getElementById(elId);
   el.innerHTML = '';
-  WORKFLOW_STEPS.forEach((step, i) => {
+  steps.forEach((step, i) => {
     if (i > 0) {
       const arrow = document.createElement('span');
       arrow.className = 'wf-arrow';
@@ -268,6 +301,14 @@ function renderWorkflowViz(activeIndex) {
     chip.textContent = step;
     el.appendChild(chip);
   });
+}
+
+function renderWorkflowViz(activeIndex) {
+  renderStepViz('workflowViz', WORKFLOW_STEPS, activeIndex);
+}
+
+function renderDiagStatus(activeIndex) {
+  renderStepViz('diagStatusViz', DIAGNOSTIC_STATUS_STEPS, activeIndex);
 }
 
 function pushActivityFeed(message) {
@@ -398,6 +439,181 @@ function statusClass(status) {
 }
 
 // ---------------------------------------------------------------------------
+// Business Diagnostic Demo (P0 live trigger)
+//
+// Unlike the New Inquiry demo above, this section makes a real network call
+// -- fetch('/api/trigger-demo') -- to a same-origin serverless relay that
+// forwards to a live, running n8n workflow with the auth token attached
+// server-side (see website/api/trigger-demo.js). Only the plumbing preset
+// has a real workflow behind it; the other two presets are disabled here
+// and point back to the fully-simulated New Inquiry demo above, per the P0
+// plan's explicit instruction not to build a second live branch for them.
+// ---------------------------------------------------------------------------
+
+function diagCurrentPreset() { return BUSINESS_PRESETS[state.diagnostic.presetId]; }
+
+function renderDiagBusinessSelector() {
+  const el = document.getElementById('diagBusinessSelector');
+  el.innerHTML = '';
+  Object.values(BUSINESS_PRESETS).forEach((preset) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'business-tab' + (preset.id === state.diagnostic.presetId ? ' active' : '');
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', preset.id === state.diagnostic.presetId ? 'true' : 'false');
+    btn.innerHTML = `<span class="tab-icon">${preset.icon}</span> ${preset.industry}`;
+    btn.addEventListener('click', () => selectDiagBusiness(preset.id));
+    el.appendChild(btn);
+  });
+}
+
+function selectDiagBusiness(id) {
+  state.diagnostic.presetId = id;
+  state.diagnostic.result = null;
+  state.diagnostic.selectedAgents = [];
+  state.diagnostic.buildResult = null;
+  renderDiagBusinessSelector();
+  renderDiagRequestReadout();
+  resetDiagnosticResultPanels();
+  renderDiagStatus(-1);
+}
+
+function renderDiagRequestReadout() {
+  const preset = diagCurrentPreset();
+  document.getElementById('diagBusinessName').textContent = preset.business_name;
+  document.getElementById('diagProblem').textContent = preset.problem;
+  document.getElementById('diagSpecialRequest').textContent = preset.specialRequest || '—';
+  document.getElementById('diagNotLiveNote').hidden = preset.hasRealResearch;
+  document.getElementById('runDiagnosticBtn').disabled = !preset.hasRealResearch;
+}
+
+function resetDiagnosticResultPanels() {
+  document.getElementById('diagResultsPanel').hidden = true;
+  document.getElementById('diagAgentsPanel').hidden = true;
+  document.getElementById('diagSpecPanel').hidden = true;
+  document.getElementById('diagError').hidden = true;
+}
+
+function showDiagError(message) {
+  const el = document.getElementById('diagError');
+  el.textContent = message;
+  el.hidden = false;
+}
+
+function findingItemHtml(item) {
+  const badge = item.tier || item.confidence || '';
+  const body = item.description || item.reasoning || item.proposedSolution || item.objective || '';
+  return `<li><div class="diag-finding-title">${item.title}</div>`
+    + (badge ? `<span class="diag-badge diag-badge-${badge.toLowerCase()}">${badge}</span>` : '')
+    + `<p>${body}</p></li>`;
+}
+
+function renderDiagResults(data) {
+  document.getElementById('diagResultsPanel').hidden = false;
+  document.getElementById('diagStandardList').innerHTML = data.standard.map(findingItemHtml).join('');
+  document.getElementById('diagResearchList').innerHTML = data.research.map(findingItemHtml).join('');
+  document.getElementById('diagClientRequestedList').innerHTML = data.clientRequested.map(findingItemHtml).join('');
+  document.getElementById('diagSources').textContent = 'Sources: ' + data.sources.map((s) => s.name).join(' · ');
+}
+
+function renderDiagAgents() {
+  const preset = diagCurrentPreset();
+  const templates = AUTOMATION_TEMPLATES[preset.id] || [];
+  const el = document.getElementById('diagAgentList');
+  el.innerHTML = '';
+  templates.forEach((name) => {
+    const label = document.createElement('label');
+    label.className = 'diag-agent-option';
+    label.innerHTML = `<input type="checkbox" value="${name}"> ${name}`;
+    label.querySelector('input').addEventListener('change', (e) => {
+      const selected = state.diagnostic.selectedAgents;
+      const idx = selected.indexOf(name);
+      if (e.target.checked && idx === -1) selected.push(name);
+      else if (!e.target.checked && idx > -1) selected.splice(idx, 1);
+    });
+    el.appendChild(label);
+  });
+  document.getElementById('diagAgentsPanel').hidden = false;
+}
+
+function renderDiagSpec(data) {
+  document.getElementById('diagSpecPanel').hidden = false;
+  document.getElementById('diagSpecName').textContent = data.automationName;
+  document.getElementById('diagSpecTrigger').textContent = data.trigger;
+  document.getElementById('diagSpecInputs').innerHTML = data.inputs.map((i) => `<li>${i}</li>`).join('');
+  document.getElementById('diagSpecSteps').innerHTML = data.steps.map((s) => `<li>${s}</li>`).join('');
+  document.getElementById('diagSpecIntegrations').innerHTML = data.integrations.map((i) => `<li>${i}</li>`).join('');
+  document.getElementById('diagSpecNotes').innerHTML = data.developerNotes.map((n) => `<li>${n}</li>`).join('');
+  document.getElementById('diagSpecStatus').textContent = 'Status: ' + data.status.toUpperCase();
+}
+
+async function runDiagnostic() {
+  const preset = diagCurrentPreset();
+  if (!preset.hasRealResearch) return;
+
+  resetDiagnosticResultPanels();
+  state.diagnostic.result = null;
+  state.diagnostic.selectedAgents = [];
+  state.diagnostic.buildResult = null;
+  renderDiagStatus(1); // RECEIVED (done) -> RESEARCH RUNNING (active): real click + real fetch about to be sent
+  document.getElementById('runDiagnosticBtn').disabled = true;
+
+  try {
+    const res = await fetch('/api/trigger-demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: 'diagnostic', businessId: preset.id, problem: preset.problem, specialRequest: preset.specialRequest })
+    });
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload.error || 'Diagnostic request failed');
+
+    state.diagnostic.result = payload;
+    if (payload.hasRealResearch) {
+      renderDiagStatus(4); // RESEARCH COMPLETE + DIAGNOSTIC READY (done) -> AWAITING APPROVAL (active): real response arrived
+      renderDiagResults(payload);
+      renderDiagAgents();
+    } else {
+      showDiagError(payload.message || 'Live diagnostic research is not connected for this business.');
+    }
+  } catch (err) {
+    showDiagError('Could not reach the live diagnostic workflow. Please try again.');
+  } finally {
+    document.getElementById('runDiagnosticBtn').disabled = false;
+  }
+}
+
+async function approveDiagnostic() {
+  const preset = diagCurrentPreset();
+  const selectedAgents = state.diagnostic.selectedAgents;
+
+  document.getElementById('diagError').hidden = true;
+  renderDiagStatus(6); // APPROVED (done) -> BUILDING AUTOMATION (active): real click + real fetch about to be sent
+  document.getElementById('approveDiagnosticBtn').disabled = true;
+
+  try {
+    const res = await fetch('/api/trigger-demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: 'approve', businessId: preset.id, selectedAgents: selectedAgents, approvedBy: 'Judge (competition demo)' })
+    });
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload.error || 'Automation build request failed');
+
+    if (payload.status === 'demo-build-ready') {
+      state.diagnostic.buildResult = payload;
+      renderDiagStatus(8); // AUTOMATION SPEC READY + DEVELOPER BRIEF READY: real response arrived
+      renderDiagSpec(payload);
+    } else {
+      showDiagError(payload.message || 'Automation build is not available for this business.');
+    }
+  } catch (err) {
+    showDiagError('Could not reach the automation-builder workflow. Please try again.');
+  } finally {
+    document.getElementById('approveDiagnosticBtn').disabled = false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------------------
 
@@ -427,6 +643,12 @@ function init() {
   document.getElementById('closeModal').addEventListener('click', () => {
     document.getElementById('demoModeModal').hidden = true;
   });
+
+  renderDiagBusinessSelector();
+  renderDiagRequestReadout();
+  renderDiagStatus(-1);
+  document.getElementById('runDiagnosticBtn').addEventListener('click', runDiagnostic);
+  document.getElementById('approveDiagnosticBtn').addEventListener('click', approveDiagnostic);
 }
 
 // The script is deferred and sits at the end of <body>, so the DOM is already
