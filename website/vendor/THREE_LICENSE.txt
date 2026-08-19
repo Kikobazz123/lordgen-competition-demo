@@ -1,0 +1,59 @@
+three.js -- vendored, pinned copy
+==================================
+
+Package:     three
+Version:     0.160.0 (r160)
+Source:      https://unpkg.com/three@0.160.0/build/three.min.js
+Vendored:    2026-08-18
+File:        three.min.js (669,884 bytes, self-contained UMD build)
+
+Why r160 specifically, not the latest release
+-----------------------------------------------
+three.js dropped its global/UMD `build/three.min.js` build starting with
+r161 -- from r161 onward the library ships as ES modules only. This
+website (website/index.html) is designed to be opened directly via
+file:// with no server ("Just open index.html in a browser -- no server
+required", see ../README.md). Chrome (and other browsers) always treat
+file:// as a cross-origin/opaque origin for `<script type="module">` and
+its imports, so an ES-module-only three.js build would fail to load with
+a CORS error every time the site is opened this way -- confirmed live
+against this exact file during implementation.
+
+r160 is the last release with a working global/UMD build, loaded here as
+a plain classic `<script src="vendor/three.min.js" defer>` -- the same
+loading pattern already used for app.js -- so `window.THREE` is available
+to hero3d.js with no server, no bundler, and no CORS failure.
+
+Do not upgrade this file to a newer three.js release without first
+re-solving the file:// / ES-module problem above (e.g. switching the
+site's run model to require a local server), or the "open index.html
+directly" run mode documented in website/README.md will silently break.
+
+The vendored file itself carries one harmless `console.warn` (not an
+error) noting that the global/UMD build is deprecated upstream -- an
+accepted, documented trade-off for this project's zero-server requirement.
+
+License
+-------
+
+The MIT License
+
+Copyright (c) 2010-2023 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

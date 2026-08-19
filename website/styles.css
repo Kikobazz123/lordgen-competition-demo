@@ -295,6 +295,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .hero-inner { position: relative; }
 
+/* --- Hero 3D layer -------------------------------------------------------
+   Bounded to the hero, never full-page. Sits behind the copy (z-index 0
+   here, copy promoted to z-index 1 below) so it can never overlap the CTA
+   even if geometry/camera math drifts. Hidden below the existing 860px
+   breakpoint -- hero3d.js makes the same check before doing any WebGL work,
+   so mobile never pays the cost, this just prevents an empty box. */
+.hero-3d {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: min(42%, 520px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.9;
+}
+.hero-3d canvas { width: 100%; height: 100%; display: block; }
+@media (max-width: 860px) {
+  .hero-3d { display: none; }
+}
+
 /* --- One orchestrated page load, then stop -------------------------------
    `both` fill-mode matters: the reduced-motion block above collapses duration
    to ~0, which lands every element on its final state instead of hiding it. */
@@ -305,7 +324,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .hero-eyebrow,
 .hero h1,
 .hero-sub,
-.hero-ctas { animation: riseIn 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.hero-ctas {
+  position: relative;
+  z-index: 1;
+  animation: riseIn 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
 .hero-eyebrow { animation-delay: 0.04s; }
 .hero h1      { animation-delay: 0.12s; }
 .hero-sub     { animation-delay: 0.22s; }
@@ -341,4 +364,102 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
+}
+
+/* --- Page-wide depth, not hero-only --------------------------------------
+   The hero got a layered treatment; everything below it was still flat
+   --ink, which reads as "the depth stopped at the fold." A much fainter
+   version of the same radial-glow + hairline-grid language, no vignette,
+   no 3D, keeps it one continuous system instead of two different pages. */
+body {
+  background:
+    radial-gradient(ellipse 900px 600px at 85% 15%, rgba(201,162,75,0.05), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(138,106,36,0.07) 0 1px, transparent 1px 112px),
+    var(--ink);
+}
+
+/* --- Dimensional panels ---------------------------------------------------
+   Elevation + a hairline border-sweep on hover *and* keyboard focus (never
+   hover-only -- a keyboard user tabbing into a form field must get the same
+   acknowledgment). Kept to a hairline, not a full-surface tint: this file
+   already documents one near-miss where a bolder effect failed color-
+   contrast, so this stays conservative by design. Actual pointer-tilt
+   transform is applied inline by motion.js; this just defines the resting
+   transition and the sweep, and is a no-op if motion.js never runs. */
+.panel {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid transparent;
+  background: linear-gradient(120deg, transparent 30%, rgba(201,162,75,0.35) 50%, transparent 70%) 0 0 / 220% 100%;
+  background-repeat: no-repeat;
+  background-position: -220% 0;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.panel:hover,
+.panel:focus-within {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+.panel:hover::before,
+.panel:focus-within::before {
+  opacity: 1;
+  animation: panelSweep 1.1s ease forwards;
+}
+@keyframes panelSweep {
+  from { background-position: -220% 0; }
+  to   { background-position: 220% 0; }
+}
+
+/* --- Workflow data flow ----------------------------------------------------
+   Zero JS changes: renderWorkflowViz() already emits DOM order
+   chip, arrow, chip, arrow... (the arrow for step i precedes chip i), so
+   :has() can target "the arrow leading into the active/done step" purely
+   in CSS. Degrades to today's static gray arrows on browsers without
+   :has() support -- never broken, just less animated. */
+.wf-arrow { color: var(--slate); padding: 0 2px; align-self: center; transition: color 0.2s ease; }
+.wf-arrow:has(+ .wf-step.done) { color: var(--gold); }
+.wf-arrow:has(+ .wf-step.active) {
+  color: var(--leaf);
+  background: linear-gradient(90deg, var(--slate) 0%, var(--gold) 50%, var(--slate) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: arrowFlow 1.2s linear infinite;
+}
+@keyframes arrowFlow {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+.wf-step.active {
+  animation: stepPulse 1.4s ease-in-out infinite;
+}
+@keyframes stepPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,162,75,0.35); }
+  50%      { box-shadow: 0 0 0 6px rgba(201,162,75,0); }
+}
+
+/* --- Scroll reveal ----------------------------------------------------------
+   Progressive enhancement: content is visible by default (no [data-reveal]
+   selector below sets opacity:0 on its own). motion.js adds .reveal-pending
+   right before observing, so if that script never loads, nothing is ever
+   hidden -- the safe failure mode is "no entrance animation," not "missing
+   content." */
+[data-reveal].reveal-pending {
+  opacity: 0;
+  transform: translateY(16px);
+}
+[data-reveal].reveal-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }

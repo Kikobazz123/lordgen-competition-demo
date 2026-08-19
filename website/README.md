@@ -30,6 +30,14 @@ These are independent of the backend `data/professions/` registry (`docs/profess
 
 Adding a new business here means adding one object to `BUSINESS_PRESETS` (name, industry, services, intake fields, a `classify()` rule, a `responseTemplate()`) — no other code changes.
 
+## 3D & motion (added 2026-08-18)
+
+The hero has a small, bounded WebGL scene (`hero3d.js`) rendering the logo mark's own 5-bar rhythm as a slowly rotating, pointer-reactive geometric cluster — not a generic sphere/particle system. `motion.js` (separate file, so a WebGL failure can never take it down) adds event-driven card tilt on `.panel`, a magnetic-hover effect on the two hero CTAs, and scroll-reveal via `IntersectionObserver`. Both are classic `<script defer>` files, plain vanilla JS — no bundler, no build step added.
+
+**One vendored dependency**: `vendor/three.min.js`, pinned at **three@0.160.0** specifically — not the latest release. three.js dropped its global/UMD build starting r161 (ES modules only from there), and `<script type="module">` is blocked by CORS when this page is opened via `file://` (this repo's primary, documented run mode above) — confirmed live during implementation. r160 is the last release with a working classic-script build, so `hero3d.js` can use `window.THREE` with zero server requirement, exactly like `app.js` already does. Full rationale and the license (MIT) are in `vendor/THREE_LICENSE.txt` — read that before ever upgrading this file.
+
+Both `hero3d.js` and `motion.js` bail out cleanly (no console errors, no partial state) when: `prefers-reduced-motion: reduce` is set, the viewport is mobile-width (≤860px), WebGL is unsupported, or the pointer is coarse/touch (parallax and tilt only, not the whole scene) — in every case the already-existing CSS hero background is the entire fallback visual, not a separate thing that was built.
+
 ## Brand
 
 Uses LordGen's actual, established identity (not invented for this page) — see `../../Lordgen AI Skill builder/references/brand.md` for the pointer and full source guideline. Ink/Graphite/Regal Gold/Leaf/Brass/Bone/Slate palette, Archivo typeface (embedded locally in `archivo-fontface.css`, no external font CDN — same asset already built and tested for `lordgen-pitch`'s PDF pipeline), zero border-radius/square containers everywhere, flush-left text always, and the real logo mark (inlined SVG in `index.html`'s header, sourced from `../../Newsletter Demo/lordgen-ai-logo.svg`).

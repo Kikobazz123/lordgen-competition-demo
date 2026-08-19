@@ -38,6 +38,7 @@
 
 <section class="hero">
   <div class="container hero-inner">
+    <div class="hero-3d" aria-hidden="true"><canvas id="heroCanvas"></canvas></div>
     <p class="hero-eyebrow">Generative Intelligence, Governed</p>
     <h1>AI Automation Built Around Your Business</h1>
     <p class="hero-sub">
@@ -46,8 +47,8 @@
       The same engine adapts to plumbing, real estate, and salon businesses without being rebuilt.
     </p>
     <div class="hero-ctas">
-      <a href="#demo" class="btn btn-primary">Launch Demo</a>
-      <a href="#how-it-works" class="btn btn-secondary">See How It Works</a>
+      <a href="#demo" class="btn btn-primary btn-magnetic">Launch Demo</a>
+      <a href="#how-it-works" class="btn btn-secondary btn-magnetic">See How It Works</a>
     </div>
   </div>
 </section>
@@ -56,13 +57,13 @@
   <div class="container">
     <h2>One engine. Any business.</h2>
     <div class="story-flow">
-      <div class="story-step" data-step="1">A business receives an inquiry</div>
-      <div class="story-step" data-step="2">LordGen AI understands the business context</div>
-      <div class="story-step" data-step="3">AI analyzes the inquiry</div>
-      <div class="story-step" data-step="4">The system qualifies the lead</div>
-      <div class="story-step" data-step="5">AI generates an appropriate response</div>
-      <div class="story-step" data-step="6">The workflow determines the next action</div>
-      <div class="story-step story-step-final" data-step="7">A structured, actionable result</div>
+      <div class="story-step" data-step="1" data-reveal>A business receives an inquiry</div>
+      <div class="story-step" data-step="2" data-reveal>LordGen AI understands the business context</div>
+      <div class="story-step" data-step="3" data-reveal>AI analyzes the inquiry</div>
+      <div class="story-step" data-step="4" data-reveal>The system qualifies the lead</div>
+      <div class="story-step" data-step="5" data-reveal>AI generates an appropriate response</div>
+      <div class="story-step" data-step="6" data-reveal>The workflow determines the next action</div>
+      <div class="story-step story-step-final" data-step="7" data-reveal>A structured, actionable result</div>
     </div>
   </div>
 </section>
@@ -123,19 +124,19 @@
       </div>
     </div>
 
-    <div class="workflow-viz-wrap">
+    <div class="workflow-viz-wrap" data-reveal>
       <h3>Workflow</h3>
       <div class="workflow-viz" id="workflowViz"></div>
     </div>
 
     <div class="feed-dashboard-grid">
-      <div class="panel feed-panel">
+      <div class="panel feed-panel" data-reveal>
         <div class="panel-header"><span class="panel-eyebrow">Live</span><h3>Activity Feed</h3></div>
         <ul class="activity-feed" id="activityFeed">
           <li class="feed-empty">No activity yet &mdash; submit an inquiry to see it here.</li>
         </ul>
       </div>
-      <div class="panel dashboard-panel">
+      <div class="panel dashboard-panel" data-reveal>
         <div class="panel-header"><span class="panel-eyebrow">Overview</span><h3>Business Dashboard</h3></div>
         <div class="dashboard-metrics" id="dashboardMetrics"></div>
       </div>
@@ -161,5 +162,8 @@
 </div>
 
 <script src="app.js" defer></script>
+<script src="vendor/three.min.js" defer></script>
+<script src="hero3d.js" defer></script>
+<script src="motion.js" defer></script>
 </body>
 </html>
