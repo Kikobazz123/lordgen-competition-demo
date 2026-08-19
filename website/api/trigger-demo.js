@@ -1,5 +1,5 @@
 // Server-side relay for the competition live-demo trigger (P0).
-// (rebuild trigger: pick up Preview-environment env vars)
+// (rebuild trigger: pick up the two token env vars)
 //
 // The browser never sees an n8n webhook URL or auth token -- it calls this
 // same-origin endpoint, and this function attaches the header-auth token
