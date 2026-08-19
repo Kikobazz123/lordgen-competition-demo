@@ -1,6 +1,4 @@
 // Server-side relay for the competition live-demo trigger (P0).
-// (Deploy marker: forces a fresh Vercel build after connecting the GitHub
-// integration, since past commits weren't deployed retroactively.)
 //
 // The browser never sees an n8n webhook URL or auth token -- it calls this
 // same-origin endpoint, and this function attaches the header-auth token
