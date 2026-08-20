@@ -1,5 +1,4 @@
 // Server-side relay for the competition live-demo trigger (P0).
-// (rebuild trigger: checking approve webhook token fix)
 //
 // The browser never sees an n8n webhook URL or auth token -- it calls this
 // same-origin endpoint, and this function attaches the header-auth token
@@ -92,11 +91,7 @@ module.exports = async function handler(req, res) {
     clearTimeout(timeoutId);
     res.status(502).json({
       error: 'Could not reach the live diagnostic workflow. Please try again.',
-      demo: true,
-      // TEMPORARY diagnostics -- reveals no secrets (no token/URL values),
-      // only the JS error type/message, to debug the P0 live-deploy rollout.
-      // Remove once the live chain is confirmed working end to end.
-      debug: { name: err && err.name, message: err && err.message, hasFetch: typeof fetch, nodeVersion: process.version }
+      demo: true
     });
   }
 };
