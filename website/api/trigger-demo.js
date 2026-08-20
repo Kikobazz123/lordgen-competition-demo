@@ -1,5 +1,7 @@
 // Server-side relay for the competition live-demo trigger (P0).
 //
+// (rebuild trigger: checking separate approve-webhook credential fix)
+//
 // The browser never sees an n8n webhook URL or auth token -- it calls this
 // same-origin endpoint, and this function attaches the header-auth token
 // server-side before forwarding. Real URL/token values live only in this
