@@ -21,6 +21,10 @@ const TARGETS = {
   approve: {
     urlEnv: 'N8N_APPROVE_WEBHOOK_URL',
     tokenEnv: 'N8N_APPROVE_WEBHOOK_TOKEN'
+  },
+  handover: {
+    urlEnv: 'N8N_HANDOVER_WEBHOOK_URL',
+    tokenEnv: 'N8N_HANDOVER_WEBHOOK_TOKEN'
   }
 };
 
@@ -41,8 +45,8 @@ module.exports = async function handler(req, res) {
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const target = body.target;
 
-  if (target !== 'diagnostic' && target !== 'approve') {
-    res.status(400).json({ error: 'target must be "diagnostic" or "approve"' });
+  if (target !== 'diagnostic' && target !== 'approve' && target !== 'handover') {
+    res.status(400).json({ error: 'target must be "diagnostic", "approve", or "handover"' });
     return;
   }
 
