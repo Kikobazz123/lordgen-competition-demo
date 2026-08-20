@@ -185,6 +185,22 @@ Everything else from the original P0/rebuild design is unchanged: the relay patt
 
 Matches design decision 8 from the v2 pivot: only `CRM Handoff` (pure field-mapping, no real external complexity) is marked `simple` for v1 across all 4 categories; everything else routes to `DEVELOPER_REVIEW` with full context preserved, regardless of category. This table is deliberately generic-per-category (not business-specific), consistent with the no-pre-baked-business decision above.
 
+## Phase 3 design refinement (2026-08-20) — Standard/Deep Diagnostic mode
+
+Before building Phase 3, the developer added a requirement: the Inquiry form needs a **mode switch**, not just a category + validity check — a professionally-named alternative to "simple mode" for non-technical users, alongside an advanced option that's upfront about needing custom developer work.
+
+- **Standard Diagnostic** (default/recommended): a short, guided, plain-language quiz (category → business name → 2-3 simple questions). Runs live research, then the category-keyed template library (Phase 2) — a match auto-completes into an instant honest spec; no match still falls through to `DEVELOPER_REVIEW`.
+- **Deep Diagnostic** (advanced): a longer questionnaire matching the fuller depth of `docs/execution-plan-template.md`'s fields (current tools, scale, specific integration needs, more pain-point detail). Selecting it shows an upfront notice that this means a developer builds something beyond the ready-made templates. Its Builder path always returns `DEVELOPER_REVIEW` with full questionnaire context attached — regardless of template match — since choosing deep research is itself the signal.
+- Both modes share the same live-research engine, category pre-filter, idempotency, and rate-limiting from Phase 2 — `mode` (`standard`/`deep`) is just an added field carried through the payload, changing only the Builder-stage routing and the frontend's question set.
+
+**n8n template research** (per the developer's explicit ask to check n8n's own template library before building from scratch): real, existing community templates confirmed for all 4 categories —
+- Eatery/Restaurant: ["Restaurant Reservation Management with OpenAI GPT and Google Sheets"](https://n8n.io/workflows/7323-restaurant-reservation-management-with-openai-gpt-and-google-sheets/), ["AI-powered restaurant booking system with Telegram, Calendar & Email notifications"](https://n8n.io/workflows/7769-ai-powered-restaurant-booking-system-with-telegram-calendar-and-email-notifications/)
+- Law Firm: ["Automated law firm lead management & scheduling with AI, Jotform & Calendar"](https://n8n.io/workflows/9383-automated-law-firm-lead-management-and-scheduling-with-ai-jotform-and-calendar/) — direct match to the intake+scheduling pattern LordGen needs.
+- Salon & Beauty: ["AI-powered salon booking with GPT, Google Calendar & email confirmations"](https://n8n.io/workflows/7783-ai-powered-salon-booking-with-gpt-google-calendar-and-email-confirmations/), ["Ai-powered salon appointment booking system with WhatsApp and Google Sheets"](https://n8n.io/workflows/8698-ai-powered-salon-appointment-booking-system-with-whatsapp-and-google-sheets/)
+- Logistics: ["AI agent for logistics order processing with GPT-4o, Gmail and Google Sheet"](https://n8n.io/workflows/3344-ai-agent-for-logistics-order-processing-with-gpt-4o-gmail-and-google-sheet/), ["Track shipments with DHL/Delhivery APIs & send Google Sheets updates to customers via WhatsApp/Email"](https://n8n.io/workflows/6650-track-shipments-with-dhldelhivery-apis-and-send-google-sheets-updates-to-customers-via-whatsappemail/)
+
+Used as structural reference only (confirms the trigger → AI-parse/qualify → log → confirm shape is standard/sound), not imported — most use integrations outside LordGen's approved set (WhatsApp Business API, Twilio, Cal.com, DHL APIs, Jotform). LordGen's own category templates stay lightweight: Gmail + the new `LordGen Demo Requests` Data Table + the existing OpenAI credential only, consistent with CLAUDE.md §6 (no new dependency without justification).
+
 Next: Phase 3 (refactor Diagnostic + Approve workflows) on developer go-ahead.
 
 ## Resuming in a new session
