@@ -527,3 +527,159 @@ body {
   font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
   color: var(--state-good); margin: 0;
 }
+
+.diag-impact-note { font-size: 0.85rem; color: var(--bone); margin: 0 0 16px; }
+.diag-impact-note .tile-label { display: block; margin-bottom: 4px; }
+.diag-technical-details { border-top: 1px solid var(--brass); padding-top: 12px; }
+.diag-technical-details summary {
+  cursor: pointer; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--gold);
+}
+.diag-technical-details > div { margin-top: 14px; }
+
+/* ===========================================================================
+   Site-upgrade layer: nav CTA / mobile menu, trust strip, problem section,
+   operating model, solutions, prototype badges, proof, FAQ, about, final CTA.
+   Reuses .container/.panel/.btn/.demo-heading/.tile-label/[data-reveal] --
+   new classes below only cover what those don't. See LORDGEN_SITE_UPGRADE.md.
+   =========================================================================== */
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+.btn-small { padding: 8px 18px; font-size: 0.8rem; }
+.header-nav a.nav-cta, .header-nav a.nav-cta:hover { color: var(--ink); }
+
+.nav-toggle {
+  display: none; background: transparent; border: 1px solid var(--brass);
+  width: 40px; height: 40px; align-items: center; justify-content: center;
+  flex-direction: column; gap: 5px; cursor: pointer;
+}
+.nav-toggle-bar { display: block; width: 18px; height: 2px; background: var(--bone); }
+
+@media (max-width: 768px) {
+  .nav-toggle { display: inline-flex; }
+  .header-nav {
+    display: none; position: absolute; top: 72px; left: 0; right: 0;
+    flex-direction: column; gap: 0; background: var(--graphite);
+    border-bottom: 1px solid var(--brass);
+  }
+  .header-nav.is-open { display: flex; }
+  .header-nav a { padding: 14px 32px; border-top: 1px solid var(--brass); }
+  .header-nav a:first-child { border-top: none; }
+  .nav-cta { margin: 14px 32px 18px; text-align: center; }
+}
+
+/* --- Trust strip --- */
+.trust-strip { padding: 26px 0; border-top: 1px solid var(--brass); border-bottom: 1px solid var(--brass); }
+.trust-list { display: flex; flex-wrap: wrap; gap: 10px 0; list-style: none; margin: 0; padding: 0; justify-content: center; }
+.trust-list li {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--slate); padding: 0 20px; border-left: 1px solid var(--brass);
+}
+.trust-list li:first-child { border-left: none; }
+@media (max-width: 600px) {
+  .trust-list { justify-content: flex-start; }
+  .trust-list li { border-left: none; padding: 4px 14px 4px 0; }
+}
+
+/* --- Prototype/live labels --- */
+.proto-badge {
+  display: inline-block; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--brass);
+  color: var(--gold); margin-left: 10px; vertical-align: middle;
+}
+.proof-card .proto-badge { margin-left: 0; margin-bottom: 4px; }
+
+/* --- Problem section --- */
+.problem-section { padding: 72px 0; border-top: 1px solid var(--brass); }
+.problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--brass); }
+@media (max-width: 768px) { .problem-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .problem-grid { grid-template-columns: 1fr; } }
+.problem-tile { background: var(--ink); padding: 24px; }
+.problem-tile h3 { font-size: 1rem; margin: 0 0 8px; color: var(--bone); }
+.problem-tile p { font-size: 0.86rem; color: var(--slate); margin: 0; }
+
+/* --- Operating model --- */
+.model-section { padding: 72px 0; border-top: 1px solid var(--brass); }
+.model-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--brass); }
+@media (max-width: 860px) { .model-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .model-grid { grid-template-columns: 1fr; } }
+.model-step { background: var(--graphite); padding: 24px; }
+.model-number { display: block; font-size: 0.8rem; font-weight: 800; color: var(--gold); letter-spacing: 0.06em; margin-bottom: 10px; }
+.model-step h3 { font-size: 1.05rem; margin: 0 0 8px; }
+.model-step p { font-size: 0.86rem; color: var(--slate); margin: 0; }
+
+/* --- Solutions --- */
+.solutions-section { padding: 72px 0; border-top: 1px solid var(--brass); }
+.solutions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 860px) { .solutions-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .solutions-grid { grid-template-columns: 1fr; } }
+.solution-card { display: flex; flex-direction: column; gap: 10px; }
+.solution-card h3 { font-size: 1.05rem; }
+.solution-problem { font-size: 0.85rem; color: var(--slate); margin: 0; }
+.solution-outcome { font-size: 0.9rem; color: var(--bone); font-weight: 600; margin: 0; }
+.solution-sample { font-size: 0.78rem; color: var(--slate); margin: 0; }
+.solution-card a { font-size: 0.82rem; font-weight: 700; margin-top: auto; padding-top: 6px; }
+
+/* --- Proof / example systems --- */
+.proof-section { padding: 72px 0; border-top: 1px solid var(--brass); }
+.proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+@media (max-width: 860px) { .proof-grid { grid-template-columns: 1fr; } }
+.proof-card { display: flex; flex-direction: column; gap: 8px; }
+.proof-card h3 { font-size: 1rem; margin: 6px 0 0; }
+
+/* --- FAQ --- */
+.faq-section { padding: 72px 0; border-top: 1px solid var(--brass); }
+.faq-list { display: flex; flex-direction: column; gap: 2px; background: var(--brass); }
+.faq-list details { background: var(--ink); padding: 18px 20px; }
+.faq-list summary { cursor: pointer; font-weight: 700; color: var(--bone); font-size: 0.95rem; }
+.faq-list details[open] summary { color: var(--gold); margin-bottom: 10px; }
+.faq-list p { font-size: 0.86rem; color: var(--slate); margin: 0; }
+
+/* --- About --- */
+.about-section { padding: 64px 0; border-top: 1px solid var(--brass); }
+.about-section .demo-heading { max-width: 760px; margin-bottom: 0; }
+.about-section p { font-size: 0.95rem; color: var(--bone); }
+
+/* --- Final CTA --- */
+.final-cta {
+  padding: 88px 0; border-top: 1px solid var(--brass); text-align: center;
+  background: linear-gradient(176deg, var(--graphite) 0%, var(--ink) 100%);
+}
+.final-cta-inner { display: flex; flex-direction: column; align-items: center; }
+.final-cta h2 { max-width: 640px; margin: 0 0 12px; }
+.final-cta p { color: var(--slate); margin: 0 0 28px; }
+.final-cta-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* --- Footer --- */
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; margin: 0 0 14px; font-size: 0.85rem; font-weight: 600; }
+.footer-inner p { font-size: 0.8rem; color: var(--slate); margin: 0; }
+
+/* --- Staggered card entrance (each card carries its own [data-reveal]) --- */
+.problem-grid [data-reveal]:nth-child(2) { transition-delay: 60ms; }
+.problem-grid [data-reveal]:nth-child(3) { transition-delay: 120ms; }
+.problem-grid [data-reveal]:nth-child(4) { transition-delay: 180ms; }
+.problem-grid [data-reveal]:nth-child(5) { transition-delay: 240ms; }
+.problem-grid [data-reveal]:nth-child(6) { transition-delay: 300ms; }
+
+.model-grid [data-reveal]:nth-child(2) { transition-delay: 60ms; }
+.model-grid [data-reveal]:nth-child(3) { transition-delay: 120ms; }
+.model-grid [data-reveal]:nth-child(4) { transition-delay: 180ms; }
+
+.solutions-grid [data-reveal]:nth-child(2) { transition-delay: 60ms; }
+.solutions-grid [data-reveal]:nth-child(3) { transition-delay: 120ms; }
+.solutions-grid [data-reveal]:nth-child(4) { transition-delay: 180ms; }
+.solutions-grid [data-reveal]:nth-child(5) { transition-delay: 240ms; }
+.solutions-grid [data-reveal]:nth-child(6) { transition-delay: 300ms; }
+
+.proof-grid [data-reveal]:nth-child(2) { transition-delay: 60ms; }
+.proof-grid [data-reveal]:nth-child(3) { transition-delay: 120ms; }
+
+.faq-list [data-reveal]:nth-child(2) { transition-delay: 40ms; }
+.faq-list [data-reveal]:nth-child(3) { transition-delay: 80ms; }
+.faq-list [data-reveal]:nth-child(4) { transition-delay: 120ms; }
+.faq-list [data-reveal]:nth-child(5) { transition-delay: 160ms; }
+.faq-list [data-reveal]:nth-child(6) { transition-delay: 200ms; }

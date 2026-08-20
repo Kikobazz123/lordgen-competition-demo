@@ -97,10 +97,29 @@
     targets.forEach((el) => observer.observe(el));
   }
 
+  function initMobileNav() {
+    const toggle = document.getElementById('navToggle');
+    const nav = document.getElementById('headerNav');
+    if (!toggle || !nav) return;
+
+    toggle.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    nav.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
   function init() {
     initPanelTilt();
     initMagneticButtons();
     initScrollReveal();
+    initMobileNav();
   }
 
   if (document.readyState === 'loading') {
