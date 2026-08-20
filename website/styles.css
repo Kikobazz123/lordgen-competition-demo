@@ -541,7 +541,7 @@ body {
    Site-upgrade layer: nav CTA / mobile menu, trust strip, problem section,
    operating model, solutions, prototype badges, proof, FAQ, about, final CTA.
    Reuses .container/.panel/.btn/.demo-heading/.tile-label/[data-reveal] --
-   new classes below only cover what those don't. See LORDGEN_SITE_UPGRADE.md.
+   new classes below only cover what those don't. See docs/LORDGEN_SITE_UPGRADE.md.
    =========================================================================== */
 
 .sr-only {

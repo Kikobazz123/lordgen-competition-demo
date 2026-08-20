@@ -12,9 +12,10 @@ See `docs/architecture.md` for the approved architecture and `docs/execution-pla
 
 ## Reference Documents
 
-- `LORDGEN_competition_demo.md` — demo flow, judge-facing story, definition of done.
-- `LORDGEN_competition_tools_skills_mcp_references.md` — skills/tools/MCP reference and build order.
-- `CLAUDE.md` — project constitution and process rules for the engineering agent.
+- `docs/LORDGEN_competition_demo.md` — demo flow, judge-facing story, definition of done.
+- `docs/LORDGEN_competition_tools_skills_mcp_references.md` — skills/tools/MCP reference and build order.
+- `CLAUDE.md` — project constitution and process rules for the engineering agent (includes the website-upgrade addendum, §26).
+- `docs/history/` — superseded instruction/spec docs, kept for audit trail (already implemented, no longer authoritative).
 
 ## Repository Structure
 

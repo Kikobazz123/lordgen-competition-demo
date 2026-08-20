@@ -33,7 +33,7 @@ const URGENCY_KEYWORDS = ['emergency', 'urgent', 'asap', 'today', 'now', 'floodi
 
 // Business Diagnostic Demo (P0 live trigger) -- see docs/architecture.md's
 // "Pending: Competition Live-Demo Trigger" section. Real state transitions
-// only, per LORDGEN_COMPETITION_LIVE_DEMO_ADDENDUM.md section 13: every label
+// only, per docs/history/LORDGEN_COMPETITION_LIVE_DEMO_ADDENDUM.md section 13: every label
 // below is set at the moment of a real event (button click, fetch sent, fetch
 // resolved) -- never on a timer.
 const DIAGNOSTIC_STATUS_STEPS = [
