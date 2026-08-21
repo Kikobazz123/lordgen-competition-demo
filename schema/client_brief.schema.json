@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lordgen.ai/schema/client_brief.schema.json",
+  "title": "LordGen Client Brief",
+  "description": "The single structured input every handover/proposal section builder reads from. Per LORDGEN_HANDOVER_GENERATOR_BUILD.md §4 rule 1: no section builder may reach outside this object for facts. If a fact isn't in the brief, it isn't in the document. Approval mechanism adapted from the BUILD.md's reply-phrase design to this project's actual token-link flow (LordGen Demo — Approval Decision workflow) -- see 'approval'.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meta", "client", "business", "workflow", "category_opportunities", "example_flow", "research", "automation", "build", "delivery", "tests", "approval", "connection", "developer", "golive", "support"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "issued_date", "version", "prepared_for", "prepared_by", "reply_to"],
+      "properties": {
+        "ref": { "type": "string", "pattern": "^LG-\\d{8}-[A-Z0-9]+-\\d{2}$", "description": "LG-YYYYMMDD-CLIENTSLUG-NN" },
+        "issued_date": { "type": "string", "format": "date" },
+        "version": { "type": "string", "minLength": 1 },
+        "prepared_for": { "type": "string", "minLength": 1 },
+        "prepared_by": { "type": "string", "minLength": 1 },
+        "reply_to": { "type": "string", "format": "email", "description": "From env (N8N credential / reply-to address), never hardcoded in a template." }
+      }
+    },
+
+    "client": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["business_name", "contact_name", "contact_role"],
+      "properties": {
+        "business_name": { "type": "string", "minLength": 1 },
+        "contact_name": { "type": "string", "description": "May be empty string -- a declared empty value, not a guess." },
+        "contact_role": { "type": "string" }
+      }
+    },
+
+    "business": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "category_label", "what_they_do", "source", "evidence"],
+      "properties": {
+        "category": { "type": "string", "minLength": 1, "description": "Free text. Section builders read this as prose input -- never switch on it in code (spec: 'nothing about any industry may be hard-coded')." },
+        "category_label": { "type": "string", "minLength": 1, "description": "e.g. 'logistics and delivery businesses' -- plain-English category name for §2's heading." },
+        "what_they_do": { "type": "string", "minLength": 1, "description": "Required. §1's empty state is 'fail validation', not 'render nothing' -- enforced by minLength here." },
+        "source": { "type": "string", "enum": ["intake", "client_call", "public_information"] },
+        "evidence": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "current_manual_steps", "pain_points"],
+      "properties": {
+        "name": { "type": "string" },
+        "current_manual_steps": { "type": "array", "items": { "type": "string" } },
+        "pain_points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["point", "evidence"],
+            "properties": { "point": { "type": "string" }, "evidence": { "type": "string" } }
+          }
+        }
+      }
+    },
+
+    "category_opportunities": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "Spec §2: exactly three rows, always. Not built-automation description -- category education.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["current_activity", "how_automation_helps", "business_benefit"],
+        "properties": {
+          "current_activity": { "type": "string", "minLength": 1 },
+          "how_automation_helps": { "type": "string", "minLength": 1 },
+          "business_benefit": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+
+    "example_flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stages", "agent_role"],
+      "properties": {
+        "stages": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Spec §3: 5-7 stages when populated directly. May be empty here -- the section builder derives stages from automation.actions/checks instead (cross-field rule, enforced by the validator function, not expressible in JSON Schema alone)."
+        },
+        "agent_role": { "type": ["string", "null"] }
+      }
+    },
+
+    "research": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["performed", "method", "findings"],
+      "properties": {
+        "performed": { "type": "boolean" },
+        "method": { "type": ["string", "null"] },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["issue", "evidence", "impact", "opportunity"],
+            "properties": {
+              "issue": { "type": "string", "minLength": 1 },
+              "evidence": { "type": "string", "minLength": 1, "description": "Required per-row. A finding without evidence is dropped by the section builder (H3), not rendered." },
+              "impact": { "type": "string" },
+              "opportunity": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "automation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trigger", "information_received", "checks", "actions", "recipients", "customer_receives", "recorded"],
+      "properties": {
+        "trigger": { "type": "string", "minLength": 1 },
+        "information_received": { "type": "array", "items": { "type": "string" } },
+        "checks": { "type": "array", "items": { "type": "string" } },
+        "actions": { "type": "array", "items": { "type": "string" } },
+        "recipients": { "type": "array", "items": { "type": "string" } },
+        "customer_receives": { "type": "string", "minLength": 1 },
+        "recorded": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "what_was_created", "systems"],
+      "properties": {
+        "status": { "type": "string", "enum": ["starter_build", "demo_test_build", "ready_for_connection", "production_ready"] },
+        "what_was_created": { "type": "string", "minLength": 1 },
+        "systems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "state", "owner"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "state": { "type": "string", "enum": ["connected", "not_connected"] },
+              "owner": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Tier A/B classification per BUILD.md §16. classify_delivery() is not built yet (Step 1 scope is schema+validator only) -- every brief defaults to tier 'B', which the spec itself calls correct behaviour until a published, smoke-tested library template exists (§17.10), not a stubbed corner.",
+      "required": ["tier", "reasons", "template_id", "template_version", "customised", "custom_mapping", "outbound_to_end_customers", "outbound_ships_disabled", "smoke_test_id", "kill_switch", "data_class", "classified_at", "classified_by", "shown_to_client_as"],
+      "properties": {
+        "tier": { "type": "string", "enum": ["A", "B"] },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "template_id": { "type": ["string", "null"] },
+        "template_version": { "type": ["string", "null"] },
+        "customised": { "type": "boolean" },
+        "custom_mapping": { "type": "boolean" },
+        "outbound_to_end_customers": { "type": "boolean" },
+        "outbound_ships_disabled": { "type": "boolean" },
+        "smoke_test_id": { "type": ["string", "null"] },
+        "kill_switch": { "type": "boolean" },
+        "data_class": { "type": "string", "enum": ["standard", "regulated"] },
+        "classified_at": { "type": ["string", "null"] },
+        "classified_by": { "type": ["string", "null"] },
+        "shown_to_client_as": { "type": ["string", "null"], "enum": ["A", "B", null] }
+      }
+    },
+
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scenario", "result", "plain_english", "run_at", "evidence_ref"],
+        "properties": {
+          "scenario": { "type": "string", "minLength": 1 },
+          "result": { "type": "string", "enum": ["passed", "failed", "not_tested"] },
+          "plain_english": { "type": "string" },
+          "run_at": { "type": "string" },
+          "evidence_ref": { "type": "string", "description": "Execution ID or similar, so every test claim traces to something real (H1)." }
+        }
+      }
+    },
+
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Adapted from the BUILD.md's reply-phrase design to this project's real mechanism: a tokenized Approve/Request-changes link (LordGen Demo — Approval Decision workflow), not an inbound-email phrase parser. H4 still applies exactly: no approval record renders anywhere unless state == 'received'.",
+      "required": ["state", "token", "decided_at", "decided_by", "channel"],
+      "properties": {
+        "state": { "type": "string", "enum": ["not_requested", "requested", "received"] },
+        "token": { "type": ["string", "null"] },
+        "decided_at": { "type": ["string", "null"] },
+        "decided_by": { "type": ["string", "null"] },
+        "channel": { "type": ["string", "null"], "enum": ["email", "website", null] }
+      }
+    },
+
+    "connection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["services"],
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["service", "method", "what_we_need"],
+            "properties": {
+              "service": { "type": "string", "minLength": 1 },
+              "method": { "type": "string", "enum": ["account_authorisation", "secure_form_client_key", "secure_form", "manual"] },
+              "what_we_need": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "developer": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §11 checklist. Internal-only -- never rendered in handover-client.pdf.",
+      "required": ["automation_approved", "connection_info_received", "workflow_imported", "error_handling_checked", "duplicate_handling_checked", "notifications_checked", "final_test_completed", "golive_approved"],
+      "properties": {
+        "automation_approved": { "type": "boolean" },
+        "connection_info_received": { "type": "boolean" },
+        "workflow_imported": { "type": "boolean" },
+        "error_handling_checked": { "type": "boolean" },
+        "duplicate_handling_checked": { "type": "boolean" },
+        "notifications_checked": { "type": "boolean" },
+        "final_test_completed": { "type": "boolean" },
+        "golive_approved": { "type": "boolean" }
+      }
+    },
+
+    "golive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["automation_design", "client_approval", "secure_connections", "developer_wiring", "final_testing", "production_launch"],
+      "properties": {
+        "automation_design": { "type": "string", "enum": ["complete", "pending"] },
+        "client_approval": { "type": "string", "enum": ["complete", "pending"] },
+        "secure_connections": { "type": "string", "enum": ["complete", "pending"] },
+        "developer_wiring": { "type": "string", "enum": ["complete", "pending"] },
+        "final_testing": { "type": "string", "enum": ["complete", "pending"] },
+        "production_launch": { "type": "string", "enum": ["complete", "pending"] }
+      }
+    },
+
+    "support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["window_days", "covers", "excludes", "contact"],
+      "properties": {
+        "window_days": { "type": "integer", "minimum": 0 },
+        "covers": { "type": "string" },
+        "excludes": { "type": "string" },
+        "contact": { "type": "string" }
+      }
+    }
+  }
+}

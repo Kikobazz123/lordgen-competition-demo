@@ -1,0 +1,146 @@
+{
+  "meta": {
+    "ref": "LG-20260821-GIGLOGISTICS-01",
+    "issued_date": "2026-08-21",
+    "version": "1.0",
+    "prepared_for": "GIG Logistics",
+    "prepared_by": "LordGen AI",
+    "reply_to": "zaxellimited360@gmail.com"
+  },
+
+  "client": { "business_name": "GIG Logistics", "contact_name": "Chidi Okafor", "contact_role": "Operations Manager" },
+
+  "business": {
+    "category": "logistics",
+    "category_label": "logistics and delivery businesses",
+    "what_they_do": "GIG Logistics is a courier and logistics company based in Lagos, Nigeria, offering delivery, haulage, and e-commerce logistics services across Nigeria, Ghana, and the United States.",
+    "source": "public_information",
+    "evidence": [
+      "GIG Logistics (GIGL) is a courier and logistics services company headquartered in Lagos, Nigeria (Wikipedia, retrieved via live search 2026-08-20).",
+      "GIG Logistics offers fast, affordable, and personalised domestic delivery services across Nigeria, with over 150 experience centres (official site, retrieved via live search 2026-08-20)."
+    ]
+  },
+
+  "workflow": {
+    "name": "Dispatch Capture and Confirmation",
+    "current_manual_steps": [
+      "Dispatch or order details are received",
+      "Staff manually check and record the order",
+      "Staff manually notify the customer"
+    ],
+    "pain_points": [
+      { "point": "Customers report inconsistent communication after placing an order", "evidence": "Trustpilot review score is 2.2/5, with recurring feedback about service consistency (source: Trustpilot, retrieved via live search 2026-08-20)." }
+    ]
+  },
+
+  "category_opportunities": [
+    { "current_activity": "Staff manually re-enter order or dispatch details after they come in", "how_automation_helps": "The details are captured and recorded automatically the moment an order comes in", "business_benefit": "Fewer typing mistakes and faster processing" },
+    { "current_activity": "Customers are told about delays or updates only when someone remembers to call or message them", "how_automation_helps": "A confirmation and reference number goes out to the customer automatically as soon as the order is logged", "business_benefit": "Customers feel informed without staff having to chase updates" },
+    { "current_activity": "There is no single place to check what happened with a past order", "how_automation_helps": "Every order and its outcome is recorded automatically in one place", "business_benefit": "Easy to look back and answer customer questions" }
+  ],
+
+  "example_flow": {
+    "stages": [
+      "Customer or staff member submits a new order or dispatch request",
+      "The order details are checked to make sure nothing is missing",
+      "The order is logged in your dispatch record",
+      "The customer receives a confirmation with their reference number and expected timeline",
+      "The order and its outcome are recorded for your reference"
+    ],
+    "agent_role": null
+  },
+
+  "research": {
+    "performed": true,
+    "method": "Live public web search (Tavily) synthesised by an AI research step (Gemini), run 2026-08-20",
+    "findings": [
+      { "issue": "Inconsistent customer communication", "evidence": "Trustpilot review score is 2.2/5 as of the research run, with recurring feedback pointing to communication gaps during delivery.", "impact": "Customers may feel uninformed and contact support more than necessary", "opportunity": "Automatic order confirmations and status updates" }
+    ]
+  },
+
+  "automation": {
+    "trigger": "A new dispatch or order is submitted through your order form",
+    "information_received": ["Order or dispatch details", "Customer contact information"],
+    "checks": ["All required order details are present"],
+    "actions": ["The order is logged in your dispatch record", "A confirmation is sent to the customer"],
+    "recipients": ["The customer"],
+    "customer_receives": "A confirmation message with their order reference and expected timeline",
+    "recorded": ["Every order and its outcome, for your reference"]
+  },
+
+  "build": {
+    "status": "starter_build",
+    "what_was_created": "Dispatch Capture and Confirmation -- GIG Logistics",
+    "systems": [
+      { "name": "Order form", "state": "not_connected", "owner": "Your developer" },
+      { "name": "Dispatch record", "state": "not_connected", "owner": "Your developer" },
+      { "name": "Customer email", "state": "connected", "owner": "LordGen (demo)" }
+    ]
+  },
+
+  "delivery": {
+    "tier": "B",
+    "reasons": [
+      "Emails the client's own customers (A4)",
+      "Order form and dispatch record have no connection method yet (A2)",
+      "Not a published library template (A1)"
+    ],
+    "template_id": null,
+    "template_version": null,
+    "customised": true,
+    "custom_mapping": true,
+    "outbound_to_end_customers": true,
+    "outbound_ships_disabled": false,
+    "smoke_test_id": null,
+    "kill_switch": false,
+    "data_class": "standard",
+    "classified_at": "2026-08-21T01:07:12Z",
+    "classified_by": "classify_delivery@v0-manual",
+    "shown_to_client_as": null
+  },
+
+  "tests": [
+    { "scenario": "Valid dispatch confirmation request", "result": "passed", "plain_english": "A complete, valid request produced the correct record and sent a real confirmation.", "run_at": "2026-08-21T01:07:12Z", "evidence_ref": "n8n execution 63" },
+    { "scenario": "Request missing a required field", "result": "passed", "plain_english": "An incomplete request was rejected before anything was recorded.", "run_at": "2026-08-20", "evidence_ref": "n8n execution 47" },
+    { "scenario": "Same request submitted twice", "result": "passed", "plain_english": "The second attempt returned the original result instead of creating a duplicate.", "run_at": "2026-08-20", "evidence_ref": "n8n execution 48" },
+    { "scenario": "Confirmation delivery fails", "result": "not_tested", "plain_english": "", "run_at": "", "evidence_ref": "" }
+  ],
+
+  "approval": {
+    "state": "received",
+    "token": "mt290i3z-nzosusez-4i2ir6o8",
+    "decided_at": "2026-08-20T21:07:11.539-04:00",
+    "decided_by": "Chidi Okafor, Operations Manager",
+    "channel": "email"
+  },
+
+  "connection": {
+    "services": [
+      { "service": "Order form", "method": "manual", "what_we_need": "Access to connect your order form to the automation" },
+      { "service": "Dispatch record", "method": "manual", "what_we_need": "Access to your dispatch record system" },
+      { "service": "Customer email", "method": "account_authorisation", "what_we_need": "Already connected via LordGen's demo account; production would use your own sending address" }
+    ]
+  },
+
+  "developer": {
+    "automation_approved": true,
+    "connection_info_received": false,
+    "workflow_imported": false,
+    "error_handling_checked": true,
+    "duplicate_handling_checked": true,
+    "notifications_checked": false,
+    "final_test_completed": false,
+    "golive_approved": false
+  },
+
+  "golive": {
+    "automation_design": "complete",
+    "client_approval": "complete",
+    "secure_connections": "pending",
+    "developer_wiring": "pending",
+    "final_testing": "pending",
+    "production_launch": "pending"
+  },
+
+  "support": { "window_days": 14, "covers": "Defect fixes to the starter build", "excludes": "Production connection/developer wiring work", "contact": "zaxellimited360@gmail.com" }
+}
