@@ -5,10 +5,16 @@
 // a failure is actionable, not just "invalid".
 
 const BLOCKED_TOKENS = ['judge', 'competition', 'preset', 'auto-generated', 'placeholder', 'lorem'];
-// 'demo' and 'test' are blocked too, but both have a legitimate spec-mandated
-// use ("Test evidence" is a required §3.2 section heading; a document
-// describing itself honestly may need to say what it does NOT cover). These
-// two get narrower, phrase-aware checks below instead of a blind word-ban.
+// 'demo' is blocked too (no legitimate client-facing use), handled below with
+// its own check. 'test' was blocked here too in an earlier version, with a
+// narrow exception for the exact phrase "test evidence" -- that didn't survive
+// contact with the real spec: LORDGEN_UNIVERSAL_HANDOVER_SPEC.md §7 requires a
+// "What We Tested" section, §5's worked example says "tested before", and §9's
+// own honest disclaimer needs phrases like "tested again" and "before it goes
+// live". The ordinary English verb "to test" is exactly what an honest
+// build-status document needs to use. What the original defect actually was
+// (internal fixture IDs like "QA-TEST-01", "test mode") is covered by more
+// targeted patterns, not a blanket ban on the word.
 const BANNED_WRITING_WORDS = ['etc', 'various', 'as needed', 'tbd', 'simple', 'robust', 'seamless', 'leverage'];
 const VENDOR_FOOTER_PATTERNS = [/pdfshift/i, /created via/i, /powered by/i, /this email was sent automatically with n8n/i];
 const REQUIRED_HEADER_FIELDS = ['referenceNumber', 'issueDate', 'preparedBy', 'preparedByContact', 'version'];
@@ -85,9 +91,9 @@ function validateClientDocument(doc) {
     if (wordBoundaryRegex('demo').test(value)) {
       pushError(errors, field, 'rule-3', 'Blocked internal token "demo" found in ' + field + '.');
     }
-    // "test": banned everywhere EXCEPT inside the exact §3.2-required heading "Test evidence".
-    const withoutApprovedPhrase = value.replace(/test evidence/gi, '');
-    if (wordBoundaryRegex('test').test(withoutApprovedPhrase)) {
+    // Targeted internal-test-artifact patterns -- not the bare word "test"
+    // (see the BLOCKED_TOKENS comment above for why that's not banned).
+    if (/\bQA-TEST\b/i.test(value) || /\btest\s+mode\b/i.test(value) || /\bin\s+test\b/i.test(value)) {
       pushError(errors, field, 'rule-3',
         'Blocked internal token "test" found in ' + field + ' outside the approved "Test evidence" heading.');
     }

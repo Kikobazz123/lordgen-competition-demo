@@ -113,7 +113,11 @@ test('does not false-positive on the required "Test evidence" heading or the wor
   assert.equal(result.valid, true);
 });
 
-test('rejects the bare word "test" outside the approved "Test evidence" heading', () => {
+test('does not ban the ordinary word "test"/"tested" -- required by the spec\'s own language', () => {
+  // LORDGEN_UNIVERSAL_HANDOVER_SPEC.md §7 requires a "What We Tested" section,
+  // §5's worked example says "tested before", §9 needs "tested again ... before
+  // it goes live". A blanket ban on "test" doesn't survive contact with the
+  // spec that mandates using it.
   const doc = {
     documentType: 'handover',
     opportunityNamed: 'X',
@@ -125,10 +129,28 @@ test('rejects the bare word "test" outside the approved "Test evidence" heading'
     steps: ['n8n does the thing to the record', 'n8n does another thing to the record', 'n8n does a third thing to the record', 'n8n does a fourth thing to the record'],
     integrations: ['CRM'],
     header: { referenceNumber: '1', issueDate: '2026-08-20', preparedBy: 'A', preparedByContact: 'a@b.com', version: '1.0' },
-    fullText: 'This is a test message that should never reach a client.'
+    fullText: 'What We Tested. The connected workflow is tested again before it goes live.'
   };
   const result = validateClientDocument(doc);
-  assert.ok(result.errors.some((e) => e.rule === 'rule-3' && e.message.includes('"test"')));
+  assert.equal(result.errors.some((e) => e.message.includes('"test"')), false);
+});
+
+test('still rejects targeted internal-test-artifact patterns (QA-TEST IDs, "test mode")', () => {
+  const doc = {
+    documentType: 'handover',
+    opportunityNamed: 'X',
+    opportunityBuilt: 'X',
+    businessName: 'Y',
+    automationName: 'X',
+    trigger: 'T',
+    builtOn: 'n8n',
+    steps: ['n8n does the thing to the record', 'n8n does another thing to the record', 'n8n does a third thing to the record', 'n8n does a fourth thing to the record'],
+    integrations: ['CRM'],
+    header: { referenceNumber: '1', issueDate: '2026-08-20', preparedBy: 'A', preparedByContact: 'a@b.com', version: '1.0' },
+    fullText: 'Reference job QA-TEST-01 is still in test mode.'
+  };
+  const result = validateClientDocument(doc);
+  assert.ok(result.errors.some((e) => e.rule === 'rule-3'));
 });
 
 test('rejects a step count outside 4-8 and a step over 20 words', () => {
