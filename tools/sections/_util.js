@@ -9,8 +9,25 @@ function esc(s) {
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+const DATE_ONLY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 function humanDate(iso) {
   if (!iso) return '';
+
+  // A bare YYYY-MM-DD (e.g. meta.issued_date) has no timezone of its own.
+  // Routing it through `new Date(iso)` parses it as UTC midnight per the
+  // ISO-8601 date-only rule, then .getDate()/.getMonth() read it back in the
+  // MACHINE'S local timezone -- west of UTC, that silently shifts the date
+  // back a day. It also makes rendering non-deterministic across machines in
+  // different timezones, which breaks §4 rule 3 ("same brief in, byte-
+  // identical HTML out"). Read the calendar digits directly instead; no
+  // Date object, no timezone involved. Full datetimes with their own offset
+  // (e.g. approval.decided_at) are unambiguous and keep the Date path below.
+  const dateOnly = DATE_ONLY_RE.exec(iso);
+  if (dateOnly) {
+    return Number(dateOnly[3]) + ' ' + MONTHS[Number(dateOnly[2]) - 1] + ' ' + dateOnly[1];
+  }
+
   const d = new Date(iso);
   if (isNaN(d.getTime())) return String(iso);
   return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
