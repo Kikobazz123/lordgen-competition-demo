@@ -110,15 +110,14 @@ test('cover renders ref, human-readable issued date, version, business name, con
   assert.match(html, /zaxellimited360@gmail\.com/);
 });
 
-// --- footer ---
-
-test('footer carries meta.ref', () => {
-  const brief = loadFixture();
-  const sections = buildAllSections(brief);
-  const html = renderDocument(brief, sections);
-  const footer = html.match(/<div class="footer">[\s\S]*?<\/div>/)[0];
-  assert.match(footer, /LG-20260821-GIGLOGISTICS-01/);
-});
+// Footer/page-counter ("meta.ref and page n of m", BUILD.md §12) moved to
+// the PDF renderer layer as of Step 5: Chromium's print engine doesn't
+// implement the CSS Paged Media @page margin-box syntax this module
+// originally used, so a real per-page footer has to come from Playwright's
+// own displayHeaderFooter/footerTemplate option instead. See
+// tests/render_pdf.test.js for that coverage; this document layer no longer
+// renders a footer of its own (see tools/render_document.js's header
+// comment for why keeping both would duplicate meta.ref).
 
 // --- security (G5/QA-gate-12) ---
 

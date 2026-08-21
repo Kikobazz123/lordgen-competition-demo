@@ -30,14 +30,21 @@
 // shipped, per the developer's stated direction -- flagging this explicitly
 // so it's a visible, correctable simplification rather than a silent one.
 //
-// Left for Step 5 (renderer adapter) to resolve, not this step:
-// - "Page n of m" in the footer uses the CSS Paged Media @page margin-box
-//   syntax below. Whether the eventual PDF renderer honours it depends on
-//   the renderer choice (§17.5, "keyed PDFShift plan or local rendering" --
-//   not yet decided).
-// - PDF text-layer extractability: satisfied by construction (this is plain
-//   HTML text, never a rasterised image), verified for real once Step 5
-//   picks a renderer.
+// UPDATE from Step 5: local rendering is confirmed (Playwright/Chromium,
+// tools/render_pdf.js), and the CSS Paged Media @page margin-box syntax this
+// module originally used for the footer's page counter turned out to be
+// dead in Chromium -- confirmed by rendering a real PDF and inspecting it,
+// not a guess. Chromium's print engine doesn't implement @top-*/@bottom-*
+// margin-box content (only Prince/WeasyPrint do). The "page n of m" footer
+// (BUILD.md §12) is implemented in tools/render_pdf.js instead, via
+// Playwright's own displayHeaderFooter/footerTemplate option, which runs on
+// every page -- the renderer's job, not the HTML template's, per the
+// service-boundary rule above. This module no longer renders any footer of
+// its own (a static one here plus a real per-page one from the renderer
+// would duplicate meta.ref on the last page -- BUILD.md's own D4 territory).
+//
+// PDF text-layer extractability: satisfied by construction (this is plain
+// HTML text, never a rasterised image) -- confirmed for real in Step 5.
 
 const { esc, humanDate } = require('./sections/_util');
 
@@ -57,7 +64,6 @@ const SERIF = 'Georgia, "Times New Roman", serif';
 function brandCss() {
   return '' +
     '@page { size: A4; margin: 0; }' +
-    '@page { @bottom-right { content: "Page " counter(page) " of " counter(pages); font-family: ' + SANS + '; font-size: 9px; color: ' + TOKENS.slate + '; } }' +
     'body { margin:0; font-family: ' + SERIF + '; color:' + TOKENS.graphite + '; background:' + TOKENS.bone + '; }' +
     '.wrap { padding: 40px 56px; }' +
     '.header { background:' + TOKENS.ink + '; color:' + TOKENS.bone + '; padding:32px 56px; }' +
@@ -79,8 +85,7 @@ function brandCss() {
     'td { border-bottom:1px solid ' + TOKENS.slate + '; padding:5px 6px; font-size:11.5px; text-align: left; }' +
     '.approved { background:' + TOKENS.graphite + '; color:' + TOKENS.bone + '; padding:12px 20px; border-left:4px solid ' + TOKENS.gold + '; font-family: ' + SANS + '; font-size: 12.5px; }' +
     '.internal-banner { background:' + TOKENS.brass + '; color:' + TOKENS.ink + '; font-family: ' + SANS + '; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; text-align:center; padding: 10px; page-break-before: always; break-before: page; }' +
-    '.internal .section td, .internal .section li, .internal .section p { font-family: ' + SANS + '; }' +
-    '.footer { font-family: ' + SANS + '; font-size: 10px; color:' + TOKENS.slate + '; text-align:center; margin-top: 20px; }';
+    '.internal .section td, .internal .section li, .internal .section p { font-family: ' + SANS + '; }';
 }
 
 function renderCover(brief) {
@@ -98,10 +103,6 @@ function renderCover(brief) {
     '<div class="docmeta">Ref ' + esc(meta.ref) + ' &nbsp;&middot;&nbsp; Issued ' + esc(humanDate(meta.issued_date)) + ' &nbsp;&middot;&nbsp; Version ' + esc(meta.version) + '<br>' +
     'Prepared for ' + preparedFor + ' &nbsp;&middot;&nbsp; Prepared by ' + esc(meta.prepared_by) + ', ' + esc(meta.reply_to) +
     '</div></div><div class="rule"></div>';
-}
-
-function renderFooter(brief) {
-  return '<div class="footer">LordGen AI -- AI Automation Built Around Your Business &nbsp;&middot;&nbsp; Ref ' + esc(brief.meta.ref) + '</div>';
 }
 
 /**
@@ -133,9 +134,9 @@ function renderDocument(brief, sectionResults, options) {
     '<style>' + brandCss() + '</style>' +
     '</head><body>' +
     renderCover(brief) +
-    '<div class="wrap">' + clientHtml + renderFooter(brief) + '</div>' +
+    '<div class="wrap">' + clientHtml + '</div>' +
     internalHtml +
     '</body></html>';
 }
 
-module.exports = { renderDocument, renderCover, renderFooter, brandCss, TOKENS };
+module.exports = { renderDocument, renderCover, brandCss, TOKENS };
