@@ -59,6 +59,19 @@ const RESEARCH_STATUS_MESSAGES = {
   processing: 'This business is already being researched. Please wait a moment and try again.'
 };
 
+// The Research Agent's researchStatus field is LLM-generated JSON, not a
+// strictly-typed backend enum -- observed live returning "research_complete"
+// where the documented contract says "complete". A strict === 'complete'
+// check is too brittle against that kind of natural output variability.
+// Recognize the small set of genuinely-distinct non-success statuses
+// explicitly; treat anything else as success IF real finding content came
+// back -- the content is the actual signal, not the exact status string.
+const INCOMPLETE_RESEARCH_STATUSES = ['not_in_category', 'rate_limited', 'no_credible_data', 'processing'];
+function isResearchComplete(payload) {
+  if (payload.researchStatus && INCOMPLETE_RESEARCH_STATUSES.indexOf(payload.researchStatus) !== -1) return false;
+  return !!(payload.standard || payload.research || payload.clientRequested);
+}
+
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
@@ -324,7 +337,7 @@ async function runDiagnostic() {
 
     state.journey.diagnosticResult = payload;
 
-    if (payload.researchStatus === 'complete') {
+    if (isResearchComplete(payload)) {
       renderJourneyStatus(2); // RESEARCH READY
       renderResults(payload);
       renderOpportunityPicker(payload);
