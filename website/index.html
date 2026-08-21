@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="LordGen AI turns an incoming business inquiry into a structured workflow — lead qualification, an intelligent response, a follow-up action, and a business record. Run a free Business Diagnostic to see the automation opportunity in your business. One engine, adapted to plumbing, real estate, and salon businesses.">
+<meta name="description" content="LordGen AI turns a real business into a researched automation opportunity — live diagnostic research, a proposal, and a built starter automation. Run a free Business Diagnostic for your eatery, law firm, salon, or logistics business.">
 <title>LordGen AI — AI Automation Built Around Your Business</title>
 <link rel="stylesheet" href="archivo-fontface.css">
 <link rel="stylesheet" href="styles.css">
@@ -35,7 +35,7 @@
     <nav class="header-nav" id="headerNav">
       <a href="#main">Home</a>
       <a href="#solutions">Solutions</a>
-      <a href="#demo">Systems</a>
+      <a href="#diagnostic-demo">Systems</a>
       <a href="#how-it-works">How It Works</a>
       <a href="#about">About</a>
       <a href="#diagnostic-demo" class="btn btn-primary btn-small nav-cta">Run Diagnostic</a>
@@ -52,12 +52,12 @@
     <h1>AI Automation Built Around Your Business</h1>
     <p class="hero-sub">
       Turn repetitive business operations into intelligent systems that capture, analyze,
-      decide, and execute — the same engine adapts to plumbing, real estate, and salon
-      businesses without being rebuilt.
+      decide, and execute — the same engine adapts to eateries, law firms, salons, and
+      logistics businesses without being rebuilt.
     </p>
     <div class="hero-ctas">
       <a href="#diagnostic-demo" class="btn btn-primary btn-magnetic">Run My Business Diagnostic</a>
-      <a href="#demo" class="btn btn-secondary btn-magnetic">See a Live System</a>
+      <a href="#diagnostic-demo" class="btn btn-secondary btn-magnetic">See a Live System</a>
     </div>
   </div>
 </section>
@@ -79,32 +79,57 @@
   <div class="container">
     <div class="demo-heading">
       <h2>Business Diagnostic</h2>
-      <p>The primary way to work with LordGen. Pick a business, and LordGen researches it, classifies what it finds into three categories, and turns your approved picks into a real automation specification &mdash; wired to a live, running n8n workflow for the plumbing business in this competition build. The other two businesses use the simulated New Inquiry demo below.</p>
+      <p>The primary way to work with LordGen. Tell us about a real eatery, law firm, salon, or logistics business, and LordGen researches it live, classifies what it finds into three categories, and turns your approved picks into a real proposal and automation build &mdash; wired to live, running n8n workflows. No pre-set examples: every result here is a genuine, freshly-researched live run.</p>
     </div>
 
-    <div class="business-selector" id="diagBusinessSelector" role="tablist" aria-label="Choose a business for the diagnostic demo"></div>
+    <form id="diagInquiryForm" novalidate>
+      <div class="business-selector" id="diagCategorySelector" role="tablist" aria-label="Choose a business category"></div>
 
-    <div class="panel diag-request-panel" data-reveal>
-      <div class="panel-header">
-        <span class="panel-eyebrow" id="diagEyebrow">Live Diagnostic</span>
-        <h3 id="diagBusinessName">&nbsp;</h3>
-      </div>
-      <div class="diag-request-readout">
-        <div>
-          <span class="tile-label">Reported Problem</span>
-          <p id="diagProblem">&mdash;</p>
+      <div class="panel diag-request-panel" data-reveal>
+        <div class="panel-header">
+          <span class="panel-eyebrow">Tell Us About The Business</span>
+          <h3>Live Diagnostic</h3>
         </div>
-        <div>
-          <span class="tile-label">Special Request</span>
-          <p id="diagSpecialRequest">&mdash;</p>
+
+        <div class="field">
+          <label for="diagBusinessNameInput">Business Name *</label>
+          <input type="text" id="diagBusinessNameInput" name="businessName" required>
         </div>
+
+        <div class="diag-request-readout">
+          <div class="field">
+            <label for="diagContactNameInput">Your Name</label>
+            <input type="text" id="diagContactNameInput" name="contactName">
+          </div>
+          <div class="field">
+            <label for="diagContactRoleInput">Your Role</label>
+            <input type="text" id="diagContactRoleInput" name="contactRole">
+          </div>
+        </div>
+        <div class="field">
+          <label for="diagContactEmailInput">Email Address *</label>
+          <input type="email" id="diagContactEmailInput" name="contactEmail" autocomplete="email" required>
+          <span class="field-hint">Used to send your proposal — we never ask for passwords by email.</span>
+        </div>
+
+        <div class="field">
+          <label for="diagModeSelect">Diagnostic Mode</label>
+          <select id="diagModeSelect" name="mode">
+            <option value="standard" selected>Standard Diagnostic (recommended)</option>
+            <option value="deep">Deep Diagnostic (advanced)</option>
+          </select>
+          <p class="diag-mode-tooltip" id="diagModeTooltip" hidden></p>
+        </div>
+
+        <div class="form-fields" id="diagQuestionFields"></div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="runDiagnosticBtn" disabled>Run Diagnostic</button>
       </div>
-      <p class="diag-not-live-note" id="diagNotLiveNote" hidden>Live diagnostic research is only wired for the plumbing demo business in this competition build. See the New Inquiry demo below, which fully simulates this business.</p>
-      <button type="button" class="btn btn-primary btn-block" id="runDiagnosticBtn">Run Diagnostic</button>
-    </div>
+    </form>
 
     <div class="diag-status-wrap" data-reveal>
-      <div class="workflow-viz" id="diagStatusViz"></div>
+      <div class="stepper-dots" id="diagStatusDots" aria-hidden="true"></div>
+      <div class="stepper-viewport"><div class="stepper-track" id="diagStatusViz"></div></div>
       <p class="diag-error" id="diagError" hidden></p>
     </div>
 
@@ -127,41 +152,27 @@
       <p class="diag-sources" id="diagSources"></p>
     </div>
 
-    <div class="panel diag-agents-panel" id="diagAgentsPanel" hidden data-reveal>
-      <div class="panel-header"><span class="panel-eyebrow">Recommended Agents</span><h3>Select What to Build</h3></div>
+    <div class="panel diag-agents-panel" id="diagOpportunityPanel" hidden data-reveal>
+      <div class="panel-header"><span class="panel-eyebrow">Opportunities</span><h3>Select What To Build</h3></div>
       <p class="diag-impact-note"><span class="tile-label">Possible Business Impact</span> Faster response &middot; Fewer missed leads &middot; Less manual follow-up &middot; Better pipeline visibility</p>
-      <div class="diag-agent-list" id="diagAgentList"></div>
-      <button type="button" class="btn btn-primary btn-block" id="approveDiagnosticBtn">Approve Selected</button>
+      <div class="diag-agent-list" id="diagOpportunityList"></div>
+      <p class="diag-mode-tooltip" id="diagNoResearchNote" hidden>A proposal needs at least one research finding to back it, and this business doesn’t have one yet. You can still request changes or contact us directly.</p>
+      <button type="button" class="btn btn-primary btn-block" id="issueProposalBtn" disabled>Send Me a Proposal</button>
     </div>
 
-    <div class="panel diag-spec-panel" id="diagSpecPanel" hidden data-reveal>
-      <div class="panel-header"><span class="panel-eyebrow">Automation Builder</span><h3 id="diagSpecName">&mdash;</h3></div>
-      <div class="diag-spec-grid">
-        <div>
-          <span class="tile-label">Trigger</span>
-          <p id="diagSpecTrigger">&mdash;</p>
-        </div>
-        <div>
-          <span class="tile-label">Required Information</span>
-          <ul id="diagSpecInputs"></ul>
-        </div>
-        <details class="diag-technical-details">
-          <summary>Technical details</summary>
-          <div>
-            <span class="tile-label">Steps</span>
-            <ol id="diagSpecSteps"></ol>
-          </div>
-          <div>
-            <span class="tile-label">Integrations</span>
-            <ul id="diagSpecIntegrations"></ul>
-          </div>
-          <div>
-            <span class="tile-label">Developer Notes</span>
-            <ul id="diagSpecNotes"></ul>
-          </div>
-        </details>
+    <div class="panel diag-spec-panel" id="diagProposalPanel" hidden data-reveal>
+      <div class="panel-header"><span class="panel-eyebrow">Proposal</span><h3>Your Decision</h3></div>
+      <p>Proposal <strong id="diagProposalRef">&mdash;</strong> is ready.</p>
+      <p id="diagProposalEmailNote">We've emailed it to you with Approve / Request-changes links. You can also decide right here:</p>
+      <div class="diag-decision-actions">
+        <button type="button" class="btn btn-primary" id="approveNowBtn">Approve and Start the Build</button>
+        <button type="button" class="btn btn-secondary" id="requestChangesBtn">Request Changes</button>
       </div>
-      <p class="diag-spec-status" id="diagSpecStatus">&mdash;</p>
+    </div>
+
+    <div class="panel diag-spec-panel" id="diagFinalPanel" hidden data-reveal>
+      <div class="panel-header"><span class="panel-eyebrow">Result</span><h3>What Happens Next</h3></div>
+      <p id="diagFinalMessage">&mdash;</p>
     </div>
   </div>
 </section>
@@ -226,14 +237,14 @@
         <p class="solution-problem">Inquiries sit unanswered while a human gets to them.</p>
         <p class="solution-outcome">Capture, qualify, route, and follow up automatically.</p>
         <p class="solution-sample">Sample: Form submitted &rarr; AI qualifies &rarr; CRM record created &rarr; follow-up scheduled.</p>
-        <a href="#demo">See a system &rarr;</a>
+        <a href="#diagnostic-demo">See a system &rarr;</a>
       </div>
       <div class="panel solution-card" data-reveal>
         <h3>Customer Support</h3>
         <p class="solution-problem">Routine questions consume time better spent on edge cases.</p>
         <p class="solution-outcome">Answer routine questions, escalate what needs a human, preserve context.</p>
         <p class="solution-sample">Sample: Message received &rarr; AI drafts a response &rarr; human approves &rarr; sent.</p>
-        <a href="#demo">See a system &rarr;</a>
+        <a href="#diagnostic-demo">See a system &rarr;</a>
       </div>
       <div class="panel solution-card" data-reveal>
         <h3>CRM Automation</h3>
@@ -267,112 +278,30 @@
   </div>
 </section>
 
-<section class="demo-section" id="demo">
-  <div class="container">
-    <div class="demo-heading">
-      <h2>Live Systems <span class="proto-badge">Prototype</span></h2>
-      <p>Problem &rarr; trigger &rarr; AI reasoning &rarr; action &rarr; result. Pick a business below &mdash; the intake form, AI analysis, and workflow adapt, same engine, different context. This panel is a client-side simulation; see the Business Diagnostic above for the live, wired version.</p>
-    </div>
-
-    <div class="business-selector" id="businessSelector" role="tablist" aria-label="Choose a business type"></div>
-
-    <div class="demo-grid">
-      <div class="panel intake-panel">
-        <div class="panel-header">
-          <span class="panel-eyebrow" id="intakeEyebrow">New Inquiry</span>
-          <h3 id="intakeBusinessName">&nbsp;</h3>
-        </div>
-        <form id="intakeForm" novalidate>
-          <div class="form-fields" id="formFields"></div>
-          <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Submit Inquiry</button>
-          <p class="form-note">Demo only &mdash; no real message is sent. <a href="#" id="demoModeInfo">What does this simulate?</a></p>
-        </form>
-      </div>
-
-      <div class="panel processing-panel" id="processingPanel" hidden>
-        <div class="panel-header"><span class="panel-eyebrow">Processing</span><h3>LordGen AI is working</h3></div>
-        <ul class="processing-steps" id="processingSteps"></ul>
-      </div>
-
-      <div class="panel analysis-panel" id="analysisPanel" hidden>
-        <div class="panel-header"><span class="panel-eyebrow">AI Analysis</span><h3>Result</h3></div>
-        <div class="analysis-grid">
-          <div class="analysis-tile">
-            <span class="tile-label">Lead Status</span>
-            <span class="tile-value" id="leadStatus">&mdash;</span>
-          </div>
-          <div class="analysis-tile">
-            <span class="tile-label">Intent</span>
-            <span class="tile-value" id="leadIntent">&mdash;</span>
-          </div>
-          <div class="analysis-tile">
-            <span class="tile-label">Priority</span>
-            <span class="tile-value" id="leadPriority">&mdash;</span>
-          </div>
-          <div class="analysis-tile">
-            <span class="tile-label">Recommended Action</span>
-            <span class="tile-value" id="leadAction">&mdash;</span>
-          </div>
-        </div>
-        <div class="ai-response">
-          <span class="tile-label">AI-Drafted Response</span>
-          <p id="aiResponseText">&mdash;</p>
-          <p class="approval-note">&#9989; Held for human approval before sending &mdash; same rule the real, tested automation follows.</p>
-        </div>
-        <button class="btn btn-secondary btn-block" id="resetBtn">Try Another Inquiry</button>
-      </div>
-    </div>
-
-    <div class="workflow-viz-wrap" data-reveal>
-      <h3>Workflow</h3>
-      <div class="workflow-viz" id="workflowViz"></div>
-    </div>
-
-    <div class="feed-dashboard-grid">
-      <div class="panel feed-panel" data-reveal>
-        <div class="panel-header"><span class="panel-eyebrow">Live</span><h3>Activity Feed</h3></div>
-        <ul class="activity-feed" id="activityFeed">
-          <li class="feed-empty">No activity yet &mdash; submit an inquiry to see it here.</li>
-        </ul>
-      </div>
-      <div class="panel dashboard-panel" data-reveal>
-        <div class="panel-header"><span class="panel-eyebrow">Overview</span><h3>Business Dashboard</h3></div>
-        <div class="dashboard-metrics" id="dashboardMetrics"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="proof-section" id="proof">
   <div class="container">
     <div class="demo-heading">
-      <h2>Example Systems</h2>
-      <p>Until LordGen has published client results, here's what the engine actually does for each business above &mdash; honestly labeled as prototype or live.</p>
+      <h2>How Results Are Generated</h2>
+      <p>There's no fixed catalog of example businesses here &mdash; every diagnostic above is a genuine live run against whatever business you enter.</p>
     </div>
     <div class="proof-grid">
       <div class="panel proof-card" data-reveal>
-        <span class="proto-badge">Live Shape, Simulated Demo</span>
-        <h3>Ridgeline Plumbing &amp; Air &mdash; Lead Follow-Up</h3>
-        <p class="solution-problem">Problem: emergency and routine service inquiries arrive by phone and form, with no consistent triage.</p>
-        <p class="solution-outcome">Workflow: inquiry &rarr; AI classifies urgency and intent &rarr; drafts a response &rarr; holds for human approval &rarr; logs to CRM.</p>
-        <p class="solution-sample">Tools: intake form, AI drafting, approval gate, CRM record.</p>
+        <span class="proto-badge">Live</span>
+        <h3>Research</h3>
+        <p class="solution-outcome">A real AI agent searches the live web for your named business and reports back what it actually finds &mdash; or says plainly when it finds nothing credible, rather than guessing.</p>
       </div>
       <div class="panel proof-card" data-reveal>
-        <span class="proto-badge">Prototype</span>
-        <h3>Harborview Realty Group &mdash; Lead Qualification</h3>
-        <p class="solution-problem">Problem: leads go cold in the gap between an initial inquiry and the first agent follow-up.</p>
-        <p class="solution-outcome">Workflow: inquiry &rarr; AI qualifies buy/sell/rent intent &rarr; drafts a response &rarr; holds for approval &rarr; logs to CRM.</p>
-        <p class="solution-sample">Tools: intake form, AI drafting, approval gate, CRM record.</p>
+        <span class="proto-badge">Live</span>
+        <h3>Proposal</h3>
+        <p class="solution-outcome">Your selected opportunities become a real proposal document, emailed to the address you provide, with a genuine approve/request-changes decision.</p>
       </div>
       <div class="panel proof-card" data-reveal>
-        <span class="proto-badge">Prototype</span>
-        <h3>Luxe Studio Salon &amp; Beauty &mdash; Booking Response</h3>
-        <p class="solution-problem">Problem: booking requests need a fast, consistent reply outside business hours.</p>
-        <p class="solution-outcome">Workflow: inquiry &rarr; AI drafts a booking response &rarr; holds for approval &rarr; logs to CRM.</p>
-        <p class="solution-sample">Tools: intake form, AI drafting, approval gate, CRM record.</p>
+        <span class="proto-badge">Live</span>
+        <h3>Handover</h3>
+        <p class="solution-outcome">Approving starts a real starter build. A handover pack explaining what was built, what was tested, and what happens next follows by email.</p>
       </div>
     </div>
-    <p class="proof-note">"Ridgeline Plumbing &amp; Air" is an illustrative name for the public demo. The workflow shape it simulates was separately built and tested as a real n8n automation for an actual local plumbing &amp; HVAC business &mdash; see the project's GitHub repo. The other two are fully simulated illustrative businesses.</p>
+    <p class="proof-note">Every one of the four business categories (Eatery/Restaurant, Law Firm, Salon &amp; Beauty, Logistics) runs the identical live path. See the project's <a href="https://github.com/Kikobazz123/lordgen-competition-demo" target="_blank" rel="noopener">GitHub repo</a> for the underlying engineering.</p>
   </div>
 </section>
 
@@ -397,9 +326,8 @@
       <h2>Frequently Asked Questions</h2>
     </div>
     <div class="faq-list">
-      <details data-reveal><summary>Is this a real AI system, or a mockup?</summary><p>Both live on this page. The "Live Systems" demo above is a client-side simulation of the same workflow shape LordGen built and tested as a real n8n automation. The Business Diagnostic's plumbing preset is wired to that real, running workflow.</p></details>
-      <details data-reveal><summary>What does "Prototype" mean on this page?</summary><p>It means the business shown is illustrative and the workflow is demonstrated, not yet running for a real paying client. We label every prototype honestly rather than presenting it as a finished case study.</p></details>
-      <details data-reveal><summary>Does the Business Diagnostic use my real data?</summary><p>No. The diagnostic runs against the pre-set demo businesses only. No visitor-submitted data is sent anywhere in this competition build.</p></details>
+      <details data-reveal><summary>Is this a real AI system, or a mockup?</summary><p>Real. The Business Diagnostic above calls live, running n8n workflows &mdash; a real AI research agent, a real proposal email, and a real starter automation build. Nothing on this page is simulated.</p></details>
+      <details data-reveal><summary>Does the Business Diagnostic use my real data?</summary><p>Yes. Whatever business name you enter is researched live on the public web. Your contact email receives a real proposal email if you choose to move forward &mdash; nothing is sent unless you submit the form.</p></details>
       <details data-reveal><summary>What tools does LordGen connect to?</summary><p>Depends on the business, but commonly a CRM, email/SMS, calendars, and forms, orchestrated through n8n with an AI layer for analysis and drafting.</p></details>
       <details data-reveal><summary>How does human approval work?</summary><p>Every AI-drafted action that goes external &mdash; a reply, a booking confirmation &mdash; is held for human approval before it sends. That gate is not optional and is visible throughout this demo.</p></details>
       <details data-reveal><summary>What happens after I run the diagnostic?</summary><p>You see the detected opportunity, choose which parts to build, and get a concrete automation specification &mdash; trigger, inputs, steps, and integrations &mdash; that a developer can inspect and implement.</p></details>
@@ -411,7 +339,7 @@
   <div class="container">
     <div class="demo-heading">
       <h2>About LordGen AI</h2>
-      <p>LordGen AI designs and builds AI automation systems &mdash; workflow engineering, AI agents, CRM automation, and API integration &mdash; for real operating businesses. This page is LordGen's competition demo: one engine, shown adapting to three different business types, with the underlying workflow shape separately built and tested as a real n8n automation. The engineering is public &mdash; see the <a href="https://github.com/Kikobazz123/lordgen-competition-demo" target="_blank" rel="noopener">GitHub repo</a>.</p>
+      <p>LordGen AI designs and builds AI automation systems &mdash; workflow engineering, AI agents, CRM automation, and API integration &mdash; for real operating businesses. This page runs LordGen's own live diagnostic engine: one system, adapting to four business categories (Eatery/Restaurant, Law Firm, Salon &amp; Beauty, Logistics) through genuine live research, not a fixed set of examples. The engineering is public &mdash; see the <a href="https://github.com/Kikobazz123/lordgen-competition-demo" target="_blank" rel="noopener">GitHub repo</a>.</p>
     </div>
   </div>
 </section>
@@ -437,18 +365,9 @@
       <a href="https://calendly.com/zaxellimited360/30min" target="_blank" rel="noopener">Book Strategy Call</a>
       <a href="https://github.com/Kikobazz123/lordgen-competition-demo" target="_blank" rel="noopener">GitHub</a>
     </div>
-    <p>LordGen AI &mdash; competition demo. This page simulates the AI workflow client-side; the underlying workflow shape was separately built and tested as a real n8n automation for an actual local plumbing &amp; HVAC business (see the project repo).</p>
+    <p>LordGen AI. The Business Diagnostic above runs live against real n8n automations &mdash; see the project repo for the underlying engineering.</p>
   </div>
 </footer>
-
-<div class="modal" id="demoModeModal" hidden>
-  <div class="modal-card">
-    <h3>What this demo actually does</h3>
-    <p>This page does not call any live service. Selecting a business, submitting the form, and everything you see in the AI Analysis panel, workflow, activity feed, and dashboard runs entirely in your browser using pre-defined business logic &mdash; no API keys, no real emails sent, no external system contacted.</p>
-    <p>It's a faithful simulation of the same workflow shape LordGen AI actually built and tested for a real local plumbing &amp; HVAC business as a real, working n8n automation (AI drafting &rarr; human approval gate &rarr; send &rarr; log). That real build lives in the project's GitHub repo, not in this browser tab.</p>
-    <button class="btn btn-primary" id="closeModal">Got it</button>
-  </div>
-</div>
 
 <script src="app.js" defer></script>
 <script src="vendor/three.min.js" defer></script>

@@ -111,7 +111,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .story-step-final::before { background: var(--gold); border-color: var(--gold); color: var(--ink); }
 
 /* Demo section */
-.demo-section { padding: 72px 0 96px; }
 .demo-heading { margin-bottom: 32px; max-width: 560px; }
 .demo-heading h2 { font-size: 1.6rem; margin-bottom: 10px; }
 .demo-heading p { color: var(--slate); }
@@ -127,9 +126,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .business-tab:hover { color: var(--bone); }
 .business-tab.active { background: var(--gold); color: var(--ink); }
 .business-tab .tab-icon { font-size: 1rem; }
-
-.demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-@media (max-width: 860px) { .demo-grid { grid-template-columns: 1fr; } }
 
 .panel { background: var(--graphite); border: 1px solid var(--brass); padding: 28px; }
 .panel-header { margin-bottom: 20px; }
@@ -154,90 +150,43 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .field.invalid input, .field.invalid select, .field.invalid textarea { border-color: var(--state-critical); }
 .field-error { color: var(--state-critical); font-size: 0.78rem; display: none; }
 .field.invalid .field-error { display: block; }
-.form-note { font-size: 0.78rem; color: var(--slate); margin: 14px 0 0; }
 
-.processing-panel { flex-direction: column; justify-content: center; min-height: 320px; }
-.processing-panel:not([hidden]) { display: flex; }
-.processing-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
-.processing-steps li {
-  display: flex; align-items: center; gap: 14px; color: var(--slate); font-size: 0.94rem;
-  opacity: 0.4; transition: opacity .3s ease, color .3s ease;
-}
-.processing-steps li.active { opacity: 1; color: var(--bone); }
-.processing-steps li.done { opacity: 0.75; color: var(--state-good); }
-.step-dot {
-  width: 8px; height: 8px; background: var(--brass); flex-shrink: 0;
-  transition: background .3s ease;
-}
-.processing-steps li.active .step-dot { background: var(--gold); box-shadow: 0 0 0 4px rgba(201,162,75,0.18); }
-.processing-steps li.done .step-dot { background: var(--state-good); }
-
-.analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--brass); margin-bottom: 1px; }
-.analysis-tile {
-  background: var(--ink); padding: 15px;
-  display: flex; flex-direction: column; gap: 5px;
-}
 .tile-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--slate); font-weight: 700; }
-.tile-value { font-size: 1.02rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--bone); }
-.tile-value.status-hot { color: var(--state-critical); }
-.tile-value.status-warm { color: var(--state-attention); }
-.tile-value.status-new { color: var(--leaf); }
-.tile-value.priority-high { color: var(--state-critical); }
-.tile-value.priority-medium { color: var(--state-attention); }
-.tile-value.priority-standard { color: var(--state-good); }
 
-.ai-response { background: var(--ink); padding: 18px; margin-bottom: 20px; }
-.ai-response p { margin: 10px 0 0; color: var(--bone); font-size: 0.94rem; }
-.approval-note { font-size: 0.8rem; color: var(--state-good); margin-top: 12px !important; }
-
-.workflow-viz-wrap { margin: 56px 0; }
-.workflow-viz-wrap h3 { font-size: 1.1rem; margin-bottom: 22px; }
-.workflow-viz { display: flex; align-items: stretch; flex-wrap: wrap; border: 1px solid var(--brass); width: fit-content; }
-.wf-step {
-  background: var(--graphite); border-right: 1px solid var(--brass); color: var(--slate);
-  padding: 12px 18px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.03em;
-  transition: all .25s ease; white-space: nowrap; display: flex; align-items: center;
+/* --- Sliding-card journey stepper -----------------------------------------
+   Replaces the old flat, wrapping/horizontally-scrolling row of step chips
+   (the exact overflow complaint this rebuild fixes). A fixed-width viewport
+   shows exactly one card at a time; the track slides via a CSS transform as
+   the active step advances. No new JS dependency, same hand-rolled-CSS
+   convention as motion.js/hero3d.js, and gated by the global
+   prefers-reduced-motion rule at the top of this file the same way those are. */
+.stepper-viewport {
+  border: 1px solid var(--brass); background: var(--ink); overflow: hidden;
 }
-.wf-step:last-child { border-right: none; }
-.wf-step.active { background: var(--gold); color: var(--ink); }
-.wf-step.done { background: var(--ink); color: var(--leaf); }
-
-.feed-dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1px; margin-top: 56px; background: var(--brass); }
-@media (max-width: 860px) { .feed-dashboard-grid { grid-template-columns: 1fr; } }
-
-.activity-feed { list-style: none; margin: 0; padding: 0; max-height: 260px; overflow-y: auto; }
-.activity-feed li {
-  display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--brass);
-  font-size: 0.85rem; color: var(--bone); animation: feedIn .3s ease;
+.stepper-track { display: flex; transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1); }
+.stepper-card {
+  flex: 0 0 100%; box-sizing: border-box; padding: 18px 22px;
+  display: flex; flex-direction: column; gap: 4px;
 }
-.activity-feed li:last-child { border-bottom: none; }
-.feed-time { color: var(--slate); flex-shrink: 0; font-variant-numeric: tabular-nums; }
-.feed-empty { color: var(--slate); font-style: italic; }
-@keyframes feedIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-
-.dashboard-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--brass); }
-.metric-tile { background: var(--ink); padding: 16px; }
-.metric-value { font-size: 1.7rem; font-weight: 800; color: var(--gold); transition: color .3s ease; font-variant-numeric: tabular-nums; }
-.metric-value.bump { color: var(--state-good); }
-.metric-label { font-size: 0.75rem; color: var(--slate); margin-top: 4px; }
+.stepper-index { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); }
+.stepper-label { font-size: 1rem; font-weight: 700; color: var(--slate); transition: color 0.2s ease; }
+.stepper-card.active .stepper-label { color: var(--leaf); }
+.stepper-card.active { border-left: 3px solid var(--gold); }
+.stepper-card.done .stepper-label { color: var(--bone); }
+.stepper-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
+.stepper-dot {
+  width: 6px; height: 6px; background: var(--brass);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.stepper-dot.active { background: var(--gold); transform: scale(1.5); }
+.stepper-dot.done { background: var(--state-good); }
 
 /* Footer */
 .site-footer { border-top: 1px solid var(--brass); padding: 32px 0; background: var(--graphite); }
 .footer-inner p { color: var(--slate); font-size: 0.8rem; max-width: 640px; margin: 0; }
 
-/* Modal */
-.modal { position: fixed; inset: 0; background: rgba(10,10,9,0.85); align-items: center; justify-content: center; z-index: 50; padding: 20px; }
-.modal:not([hidden]) { display: flex; }
-.modal-card { background: var(--graphite); border: 1px solid var(--brass); padding: 30px; max-width: 480px; box-shadow: var(--shadow); }
-.modal-card h3 { margin-bottom: 16px; }
-.modal-card p { color: var(--bone); font-size: 0.9rem; margin: 0 0 12px; }
-.modal-card .btn { margin-top: 10px; }
-
 @media (max-width: 600px) {
   .hero { padding: 56px 0 48px; }
-  .demo-section { padding: 48px 0 64px; }
-  .analysis-grid { grid-template-columns: 1fr; }
-  .dashboard-metrics { grid-template-columns: 1fr 1fr; }
   .header-nav { gap: 18px; font-size: 0.78rem; }
 }
 
@@ -249,16 +198,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    bar rhythm rather than an imported decorative motif.
    =========================================================================== */
 
-/* A11y -- Lighthouse `link-in-text-block`: an inline link inside a paragraph
-   cannot rely on color alone to be distinguishable from surrounding text. */
-.form-note a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-thickness: 1px;
-}
-
 /* Body copy gets better rag now that headings already use `balance`. */
-.hero-sub, .demo-heading p, .footer-inner p, .modal-card p, .ai-response p {
+.hero-sub, .demo-heading p, .footer-inner p {
   text-wrap: pretty;
 }
 
@@ -356,16 +297,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .business-tab:not(.active):hover::after { transform: scaleX(1); }
 
-/* The workflow is a single pipeline, so it should read as one continuous line.
-   Wrapping it stranded a trailing "→" at the end of the first row; scrolling
-   the strip keeps the sequence intact and contains the overflow to this box. */
-.workflow-viz {
-  flex-wrap: nowrap;
-  max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-}
-
 /* --- Page-wide depth, not hero-only --------------------------------------
    The hero got a layered treatment; everything below it was still flat
    --ink, which reads as "the depth stopped at the fold." A much fainter
@@ -419,33 +350,15 @@ body {
   to   { background-position: 220% 0; }
 }
 
-/* --- Workflow data flow ----------------------------------------------------
-   Zero JS changes: renderWorkflowViz() already emits DOM order
-   chip, arrow, chip, arrow... (the arrow for step i precedes chip i), so
-   :has() can target "the arrow leading into the active/done step" purely
-   in CSS. Degrades to today's static gray arrows on browsers without
-   :has() support -- never broken, just less animated. */
-.wf-arrow { color: var(--slate); padding: 0 2px; align-self: center; transition: color 0.2s ease; }
-.wf-arrow:has(+ .wf-step.done) { color: var(--gold); }
-.wf-arrow:has(+ .wf-step.active) {
-  color: var(--leaf);
-  background: linear-gradient(90deg, var(--slate) 0%, var(--gold) 50%, var(--slate) 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: arrowFlow 1.2s linear infinite;
+/* --- Sliding stepper pulse -------------------------------------------------
+   The active card gets a subtle breathing glow -- same visual intent as the
+   old chip-pulse this replaces, applied to .stepper-card.active instead. */
+.stepper-card.active {
+  animation: stepperPulse 1.6s ease-in-out infinite;
 }
-@keyframes arrowFlow {
-  from { background-position: 200% 0; }
-  to   { background-position: -200% 0; }
-}
-.wf-step.active {
-  animation: stepPulse 1.4s ease-in-out infinite;
-}
-@keyframes stepPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(201,162,75,0.35); }
-  50%      { box-shadow: 0 0 0 6px rgba(201,162,75,0); }
+@keyframes stepperPulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(201,162,75,0.25); }
+  50%      { box-shadow: inset 6px 0 0 0 rgba(201,162,75,0.12); }
 }
 
 /* --- Scroll reveal ----------------------------------------------------------
@@ -465,10 +378,10 @@ body {
 }
 
 /* ===========================================================================
-   Business Diagnostic Demo (P0 live trigger)
-   Additive section -- reuses .panel/.panel-header/.panel-eyebrow/.tile-label/
-   .workflow-viz/.wf-step/.wf-arrow/.btn/.business-tab from above rather than
-   inventing new primitives. New classes below only cover what those don't.
+   Business Diagnostic Journey (Phase 5 rebuild)
+   Reuses .panel/.panel-header/.panel-eyebrow/.tile-label/.stepper-*/.field/
+   .btn/.business-tab from above rather than inventing new primitives. New
+   classes below only cover what those don't.
    =========================================================================== */
 .diagnostic-section { padding: 0 0 96px; border-top: 1px solid var(--brass); }
 .diagnostic-section .demo-heading { padding-top: 72px; }
@@ -481,10 +394,22 @@ body {
 .diag-request-readout p { color: var(--bone); font-size: 0.92rem; margin: 5px 0 0; }
 @media (max-width: 600px) { .diag-request-readout { grid-template-columns: 1fr; } }
 
-.diag-not-live-note {
-  color: var(--slate); font-size: 0.85rem; background: var(--ink);
-  border: 1px solid var(--brass); padding: 12px 14px; margin: 0 0 18px;
+.field-hint { color: var(--slate); font-size: 0.78rem; }
+
+.diag-mode-tooltip {
+  position: relative;
+  margin: 10px 0 0; padding: 10px 12px;
+  background: var(--ink); border: 1px solid var(--gold);
+  color: var(--bone); font-size: 0.82rem;
 }
+.diag-mode-tooltip::before {
+  content: ''; position: absolute; top: -6px; left: 18px;
+  width: 10px; height: 10px; background: var(--ink);
+  border-left: 1px solid var(--gold); border-top: 1px solid var(--gold);
+  transform: rotate(45deg);
+}
+
+.diag-decision-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
 
 .diag-status-wrap { margin: 32px 0; }
 .diag-error {
@@ -519,23 +444,9 @@ body {
 }
 .diag-agent-option input { accent-color: var(--gold); }
 
-.diag-spec-grid { display: flex; flex-direction: column; gap: 18px; margin-bottom: 16px; }
-.diag-spec-grid p, .diag-spec-grid li { color: var(--bone); font-size: 0.88rem; }
-.diag-spec-grid ul, .diag-spec-grid ol { margin: 6px 0 0; padding-left: 20px; }
-.diag-spec-grid li { margin-bottom: 4px; }
-.diag-spec-status {
-  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--state-good); margin: 0;
-}
-
 .diag-impact-note { font-size: 0.85rem; color: var(--bone); margin: 0 0 16px; }
 .diag-impact-note .tile-label { display: block; margin-bottom: 4px; }
-.diag-technical-details { border-top: 1px solid var(--brass); padding-top: 12px; }
-.diag-technical-details summary {
-  cursor: pointer; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--gold);
-}
-.diag-technical-details > div { margin-top: 14px; }
+.diag-spec-panel p { color: var(--bone); font-size: 0.92rem; margin: 0 0 12px; }
 
 /* ===========================================================================
    Site-upgrade layer: nav CTA / mobile menu, trust strip, problem section,

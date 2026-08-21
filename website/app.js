@@ -1,496 +1,210 @@
 /**
- * LordGen AI — Interactive Demo
+ * LordGen AI — Business Diagnostic Journey
  *
- * IMPORTANT: This is a client-side SIMULATION. No network calls are made to any
- * live service, no API keys exist here, and nothing is actually sent anywhere.
- * It reproduces the shape of the real, separately-built-and-tested n8n automation
- * (see workflows/competition-demo.json) so a judge can see the workflow story
- * without a public page being wired to a real webhook/email-sending system.
+ * Phase 5 of the approved "Full Live Rebuild" (docs/architecture.md,
+ * plan file i-just-uploaded-a-quizzical-pinwheel.md, approved 2026-08-20).
+ * Retires the old plumbing/real_estate/salon simulated-only demo and the
+ * old inline three-stage diagnostic in favour of one real, live journey:
  *
- * Config-driven: each business is a BUSINESS_PRESETS entry (business_name,
- * industry, services, intake_fields, classify(), responseTemplate()).
- * Adding a new business = adding one preset object, no other code changes.
+ *   Inquiry -> Research -> Results -> Approval -> Builder -> Handover
+ *
+ * Every step is a real network call to a real, published n8n workflow via
+ * this repo's Vercel relays (website/api/trigger-demo.js, website/api/
+ * decision.js) -- no simulation, no fixture data, no pre-baked business
+ * name anywhere. Per the approved rebuild's confirmed decision: every
+ * visitor (judge or real prospective client) types a real business name
+ * and goes through the identical live-research path.
  */
 
-const WORKFLOW_STEPS = [
-  'NEW INQUIRY',
-  'AI ANALYSIS',
-  'LEAD QUALIFICATION',
-  'RESPONSE GENERATED',
-  'FOLLOW-UP ACTION',
-  'CRM / TASK / APPOINTMENT'
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
+// The 4 live categories (Nigeria-focused, per the approved rebuild). Icons
+// and copy only -- never a specific business name (confirmed decision: no
+// pre-baked example business anywhere in this rebuild).
+const CATEGORIES = [
+  { id: 'eatery', icon: '\u{1F37D}\u{FE0F}', label: 'Eatery / Restaurant', placeholder: 'e.g. your restaurant’s name' },
+  { id: 'law_firm', icon: '⚖️', label: 'Law Firm', placeholder: 'e.g. your firm’s name' },
+  { id: 'salon_beauty', icon: '\u{1F484}', label: 'Salon & Beauty', placeholder: 'e.g. your salon’s name' },
+  { id: 'logistics', icon: '\u{1F69A}', label: 'Logistics', placeholder: 'e.g. your company’s name' }
 ];
 
-const PROCESSING_MESSAGES = [
-  'Receiving inquiry...',
-  'Analyzing customer intent...',
-  'Qualifying lead...',
-  'Generating response...',
-  'Creating recommended action...'
+// Standard mode maps to exactly the two free-text fields the live Diagnostic
+// workflow actually reads (problem, specialRequest) -- no third question
+// invented just to round the count up; the backend has nowhere to put one.
+const STANDARD_QUESTIONS = [
+  { id: 'problem', label: 'What’s the biggest day-to-day challenge in your business right now?', required: true },
+  { id: 'specialRequest', label: 'Anything specific you’d like automated? (optional)', required: false }
 ];
 
-const URGENCY_KEYWORDS = ['emergency', 'urgent', 'asap', 'today', 'now', 'flooding', 'flooded', 'burst', 'immediately', 'no power', "can't wait"];
+// Deep mode adds the fuller questionnaire fields the live workflows already
+// accept (currentTools/scale/integrationNeeds), matching
+// docs/execution-plan-template.md's depth.
+const DEEP_QUESTIONS = STANDARD_QUESTIONS.concat([
+  { id: 'currentTools', label: 'What tools or software do you currently use for this?', required: false },
+  { id: 'scale', label: 'Roughly how many of these do you handle per week?', required: false },
+  { id: 'integrationNeeds', label: 'Any specific systems this needs to connect to?', required: false }
+]);
 
-// Business Diagnostic Demo (P0 live trigger) -- see docs/architecture.md's
-// "Pending: Competition Live-Demo Trigger" section. Real state transitions
-// only, per docs/history/LORDGEN_COMPETITION_LIVE_DEMO_ADDENDUM.md section 13: every label
-// below is set at the moment of a real event (button click, fetch sent, fetch
-// resolved) -- never on a timer.
-const DIAGNOSTIC_STATUS_STEPS = [
-  'RECEIVED', 'RESEARCH RUNNING', 'RESEARCH COMPLETE', 'DIAGNOSTIC READY',
-  'AWAITING APPROVAL', 'APPROVED', 'BUILDING AUTOMATION', 'AUTOMATION SPEC READY', 'DEVELOPER BRIEF READY'
+const JOURNEY_STEPS = [
+  'RECEIVED', 'RESEARCHING', 'RESEARCH READY', 'PROPOSAL SENT',
+  'AWAITING YOUR DECISION', 'APPROVED', 'BUILD STARTED', 'HANDOVER ON THE WAY'
 ];
 
-// Per-business template menu, addendum section 11. The automation-builder
-// workflow turns the selected subset into a real specification.
-const AUTOMATION_TEMPLATES = {
-  plumbing: ['Lead Capture Agent', 'Sales Follow-Up Agent', 'WhatsApp Response Agent', 'Appointment Agent', 'CRM Handoff'],
-  real_estate: ['Property Lead Agent', 'Lead Qualification Agent', 'Viewing Scheduler', 'Follow-Up Agent', 'CRM Handoff'],
-  salon: ['Booking Agent', 'WhatsApp Customer Agent', 'Reminder Agent', 'Retention Agent', 'CRM Handoff']
+const RESEARCH_STATUS_MESSAGES = {
+  not_in_category: null, // uses the workflow's own message field
+  rate_limited: null,
+  no_credible_data: null,
+  processing: 'This business is already being researched. Please wait a moment and try again.'
 };
-
-function scanForUrgencyBoost(formData) {
-  const text = Object.values(formData).join(' ').toLowerCase();
-  return URGENCY_KEYWORDS.some((kw) => text.includes(kw));
-}
-
-function bumpPriority(priority) {
-  if (priority === 'STANDARD') return 'MEDIUM';
-  if (priority === 'MEDIUM') return 'HIGH';
-  return priority;
-}
-
-const BUSINESS_PRESETS = {
-
-  plumbing: {
-    id: 'plumbing',
-    icon: '\u{1F527}',
-    business_name: "Ridgeline Plumbing & Air",
-    industry: 'Plumbing & HVAC',
-    tagline: 'Emergency & scheduled plumbing / HVAC services',
-    services: ['Emergency plumbing', 'Leak repair', 'Drain cleaning', 'Water heater', 'Pipe repair', 'Installation'],
-    problem: "A customer was shown one price on the technician's tablet and billed a different, higher amount later, with no easy way to get a readable copy of the terms.",
-    specialRequest: '',
-    hasRealResearch: true,
-    intake_fields: [
-      { id: 'name', label: 'Customer Name', type: 'text', required: true },
-      { id: 'phone', label: 'Phone', type: 'tel', required: true },
-      { id: 'email', label: 'Email', type: 'email', required: true },
-      { id: 'service', label: 'Service Required', type: 'select', options: null, required: true },
-      { id: 'location', label: 'Property / Location', type: 'text', required: true },
-      { id: 'urgency', label: 'Urgency', type: 'select', options: ['Emergency', 'Urgent', 'Routine'], required: true },
-      { id: 'appointment', label: 'Preferred Appointment Time', type: 'text', required: false },
-      { id: 'description', label: 'Description of the Problem', type: 'textarea', required: true }
-    ],
-    classify(data) {
-      const boost = scanForUrgencyBoost(data);
-      let status, intent, priority, action;
-      if (data.urgency === 'Emergency') {
-        status = 'HOT LEAD'; intent = 'Emergency Service Request'; priority = 'HIGH';
-        action = 'Contact customer immediately';
-      } else if (data.urgency === 'Urgent') {
-        status = 'WARM LEAD'; intent = 'Time-Sensitive Service Request'; priority = 'MEDIUM';
-        action = 'Schedule within 24 hours';
-      } else {
-        status = 'WARM LEAD'; intent = 'Scheduled Service Request'; priority = 'STANDARD';
-        action = "Schedule at the customer's preferred time";
-      }
-      if (boost && priority !== 'HIGH') { priority = bumpPriority(priority); action = 'Escalate for same-day contact'; }
-      return { status, intent, priority, action };
-    },
-    responseTemplate(data) {
-      return `Hi ${data.name}, thanks for reaching out to Ridgeline Plumbing & Air about ${data.service.toLowerCase()}. `
-        + `We've logged your request for ${data.location}${data.appointment ? ` and noted your preferred time (${data.appointment})` : ''}. `
-        + `A technician will follow up shortly to confirm details before anything is scheduled or billed.`;
-    }
-  },
-
-  real_estate: {
-    id: 'real_estate',
-    icon: '\u{1F3E1}',
-    business_name: 'Harborview Realty Group',
-    industry: 'Real Estate & Property Services',
-    tagline: 'Buy, sell, rent, and property management inquiries',
-    services: ['Buy', 'Sell', 'Rent', 'Property Management'],
-    problem: 'Leads go cold in the gap between an initial inquiry and the first agent follow-up.',
-    specialRequest: 'Faster, WhatsApp-style follow-up on new leads.',
-    hasRealResearch: false,
-    intake_fields: [
-      { id: 'name', label: 'Name', type: 'text', required: true },
-      { id: 'phone', label: 'Phone', type: 'tel', required: true },
-      { id: 'email', label: 'Email', type: 'email', required: true },
-      { id: 'transactionType', label: 'I want to...', type: 'select', options: ['Buy', 'Sell', 'Rent', 'Property Management'], required: true },
-      { id: 'propertyType', label: 'Preferred Property Type', type: 'select', options: ['Single-family home', 'Condo/Townhouse', 'Multi-family', 'Commercial', 'Land'], required: true },
-      { id: 'location', label: 'Location', type: 'text', required: true },
-      { id: 'budget', label: 'Budget', type: 'text', required: false },
-      { id: 'bedrooms', label: 'Number of Bedrooms', type: 'select', options: ['Studio', '1', '2', '3', '4+'], required: false },
-      { id: 'timeline', label: 'Timeline', type: 'select', options: ['Immediately (0-30 days)', '1-3 months', '3-6 months', 'Just researching'], required: true },
-      { id: 'notes', label: 'Additional Requirements', type: 'textarea', required: false }
-    ],
-    classify(data) {
-      const boost = scanForUrgencyBoost(data);
-      let status, priority, action;
-      if (data.timeline === 'Immediately (0-30 days)') { status = 'HOT LEAD'; priority = 'HIGH'; }
-      else if (data.timeline === '1-3 months') { status = 'WARM LEAD'; priority = 'MEDIUM'; }
-      else { status = 'NEW LEAD'; priority = 'STANDARD'; }
-      const intentMap = {
-        Buy: 'Active Buyer Inquiry', Sell: 'Seller / Listing Inquiry',
-        Rent: 'Rental Inquiry', 'Property Management': 'Property Management Inquiry'
-      };
-      const actionMap = {
-        Buy: 'Send matching listings and schedule a showing',
-        Sell: 'Schedule a listing consultation',
-        Rent: 'Send available rental options',
-        'Property Management': 'Schedule a portfolio review call'
-      };
-      action = status === 'HOT LEAD' ? `${actionMap[data.transactionType]} — today` : actionMap[data.transactionType];
-      if (boost && priority !== 'HIGH') priority = bumpPriority(priority);
-      return { status, intent: intentMap[data.transactionType], priority, action };
-    },
-    responseTemplate(data) {
-      return `Hi ${data.name}, thanks for reaching out to Harborview Realty Group. We understand you're looking to ${data.transactionType.toLowerCase()} `
-        + `a ${data.propertyType.toLowerCase()} in ${data.location}${data.budget ? ` around ${data.budget}` : ''}. `
-        + `An agent will follow up with options that match what you're looking for.`;
-    }
-  },
-
-  salon: {
-    id: 'salon',
-    icon: '\u{1F484}',
-    business_name: 'Luxe Studio Salon & Beauty',
-    industry: 'Salon & Beauty',
-    tagline: 'Hair, nails, makeup, and beauty consultations',
-    services: ['Hair styling', 'Braids', 'Nails', 'Makeup', 'Facial', 'Beauty consultation'],
-    problem: "New clients often book once and don't return, with no structured rebooking outreach.",
-    specialRequest: 'Automatic reminders and a way to bring past clients back.',
-    hasRealResearch: false,
-    intake_fields: [
-      { id: 'name', label: 'Name', type: 'text', required: true },
-      { id: 'phone', label: 'Phone', type: 'tel', required: true },
-      { id: 'email', label: 'Email', type: 'email', required: true },
-      { id: 'service', label: 'Service', type: 'select', options: null, required: true },
-      { id: 'stylist', label: 'Preferred Stylist', type: 'text', required: false },
-      { id: 'date', label: 'Preferred Date', type: 'text', required: true },
-      { id: 'time', label: 'Preferred Time', type: 'text', required: false },
-      { id: 'customerType', label: 'New or Returning Customer', type: 'select', options: ['New Customer', 'Returning Customer'], required: true },
-      { id: 'request', label: 'Special Request', type: 'textarea', required: false }
-    ],
-    classify(data) {
-      const boost = scanForUrgencyBoost(data);
-      let status, intent, priority, action;
-      if (data.customerType === 'New Customer') {
-        status = 'NEW CLIENT LEAD'; intent = 'First-Time Booking Inquiry'; priority = 'MEDIUM';
-        action = 'Send new-client welcome + booking confirmation';
-      } else {
-        status = 'REPEAT BOOKING'; intent = 'Returning Client Booking'; priority = 'STANDARD';
-        action = `Confirm appointment${data.stylist ? ` with ${data.stylist}` : ''}`;
-      }
-      if (boost) { priority = 'HIGH'; action = 'Contact client directly to accommodate the request'; }
-      return { status, intent, priority, action };
-    },
-    responseTemplate(data) {
-      return `Hi ${data.name}, thanks for reaching out to Luxe Studio Salon & Beauty! We've got your request for ${data.service.toLowerCase()} `
-        + `on ${data.date}${data.time ? ` around ${data.time}` : ''}${data.stylist ? ` with ${data.stylist}` : ''} noted. `
-        + `We'll confirm your appointment shortly.`;
-    }
-  }
-};
-
-// Fill in select-with-null-options (i.e. "use this preset's services list") after definition
-BUSINESS_PRESETS.plumbing.intake_fields.find((f) => f.id === 'service').options = BUSINESS_PRESETS.plumbing.services;
-BUSINESS_PRESETS.salon.intake_fields.find((f) => f.id === 'service').options = BUSINESS_PRESETS.salon.services;
 
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
 
-const state = {
-  currentPresetId: 'plumbing',
-  metrics: { newLeads: 0, qualifiedLeads: 0, followUps: 0, appointments: 0, conversionOpportunity: 0 },
-  diagnostic: {
-    presetId: 'plumbing',
-    result: null,
-    selectedAgents: [],
-    buildResult: null
-  }
-};
+function newJourneyState() {
+  return {
+    category: null,
+    mode: 'standard',
+    requestId: null,
+    form: {},
+    diagnosticResult: null,
+    selectedOpportunities: [],
+    proposal: null,
+    decision: null,
+    stepIndex: -1
+  };
+}
 
-const METRIC_DEFS = [
-  { id: 'newLeads', label: 'New Leads' },
-  { id: 'qualifiedLeads', label: 'Qualified Leads' },
-  { id: 'followUps', label: 'Follow-ups' },
-  { id: 'appointments', label: 'Appointments' },
-  { id: 'conversionOpportunity', label: 'Conversion Opportunity' }
-];
+const state = { journey: newJourneyState() };
 
 // ---------------------------------------------------------------------------
-// Rendering
-// ---------------------------------------------------------------------------
-
-function currentPreset() { return BUSINESS_PRESETS[state.currentPresetId]; }
-
-function renderBusinessSelector() {
-  const el = document.getElementById('businessSelector');
-  el.innerHTML = '';
-  Object.values(BUSINESS_PRESETS).forEach((preset) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'business-tab' + (preset.id === state.currentPresetId ? ' active' : '');
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-selected', preset.id === state.currentPresetId ? 'true' : 'false');
-    btn.innerHTML = `<span class="tab-icon">${preset.icon}</span> ${preset.industry}`;
-    btn.addEventListener('click', () => selectBusiness(preset.id));
-    el.appendChild(btn);
-  });
-}
-
-function selectBusiness(id) {
-  state.currentPresetId = id;
-  renderBusinessSelector();
-  renderIntakeForm();
-  resetDemoPanels();
-}
-
-// Contact fields carry the same ids across all three presets, so browsers can
-// autofill them. Without this Chrome reports the inputs as missing autocomplete.
-const AUTOCOMPLETE = { name: 'name', phone: 'tel', email: 'email' };
-
-function fieldHtml(field) {
-  const req = field.required ? 'required' : '';
-  const auto = AUTOCOMPLETE[field.id] ? ` autocomplete="${AUTOCOMPLETE[field.id]}"` : '';
-  if (field.type === 'select') {
-    const opts = field.options.map((o) => `<option value="${o}">${o}</option>`).join('');
-    return `<select id="f_${field.id}" name="${field.id}" ${req}><option value="">Select...</option>${opts}</select>`;
-  }
-  if (field.type === 'textarea') {
-    return `<textarea id="f_${field.id}" name="${field.id}" ${req}></textarea>`;
-  }
-  return `<input type="${field.type}" id="f_${field.id}" name="${field.id}"${auto} ${req}>`;
-}
-
-function renderIntakeForm() {
-  const preset = currentPreset();
-  document.getElementById('intakeBusinessName').textContent = preset.business_name;
-  document.getElementById('intakeEyebrow').textContent = `New Inquiry — ${preset.industry}`;
-
-  const wrap = document.getElementById('formFields');
-  wrap.innerHTML = '';
-  preset.intake_fields.forEach((field) => {
-    const div = document.createElement('div');
-    div.className = 'field';
-    div.dataset.fieldId = field.id;
-    div.innerHTML = `<label for="f_${field.id}">${field.label}${field.required ? ' *' : ''}</label>${fieldHtml(field)}<span class="field-error">This field is required.</span>`;
-    wrap.appendChild(div);
-  });
-
-  renderWorkflowViz(-1);
-}
-
-function renderStepViz(elId, steps, activeIndex) {
-  const el = document.getElementById(elId);
-  el.innerHTML = '';
-  steps.forEach((step, i) => {
-    if (i > 0) {
-      const arrow = document.createElement('span');
-      arrow.className = 'wf-arrow';
-      arrow.textContent = '→';
-      el.appendChild(arrow);
-    }
-    const chip = document.createElement('span');
-    chip.className = 'wf-step' + (i === activeIndex ? ' active' : i < activeIndex ? ' done' : '');
-    chip.textContent = step;
-    el.appendChild(chip);
-  });
-}
-
-function renderWorkflowViz(activeIndex) {
-  renderStepViz('workflowViz', WORKFLOW_STEPS, activeIndex);
-}
-
-function renderDiagStatus(activeIndex) {
-  renderStepViz('diagStatusViz', DIAGNOSTIC_STATUS_STEPS, activeIndex);
-}
-
-function pushActivityFeed(message) {
-  const el = document.getElementById('activityFeed');
-  const empty = el.querySelector('.feed-empty');
-  if (empty) empty.remove();
-  const li = document.createElement('li');
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, '0');
-  const mm = String(now.getMinutes()).padStart(2, '0');
-  li.innerHTML = `<span class="feed-time">${hh}:${mm}</span><span>${message}</span>`;
-  el.insertBefore(li, el.firstChild);
-}
-
-function renderDashboard() {
-  const el = document.getElementById('dashboardMetrics');
-  el.innerHTML = '';
-  METRIC_DEFS.forEach((m) => {
-    const tile = document.createElement('div');
-    tile.className = 'metric-tile';
-    tile.innerHTML = `<div class="metric-value" id="metric_${m.id}">${state.metrics[m.id]}</div><div class="metric-label">${m.label}</div>`;
-    el.appendChild(tile);
-  });
-}
-
-function bumpMetric(id) {
-  state.metrics[id] += 1;
-  const valueEl = document.getElementById(`metric_${id}`);
-  if (valueEl) {
-    valueEl.textContent = state.metrics[id];
-    valueEl.classList.add('bump');
-    setTimeout(() => valueEl.classList.remove('bump'), 500);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Form handling
-// ---------------------------------------------------------------------------
-
-function collectFormData(preset) {
-  const data = {};
-  let valid = true;
-  preset.intake_fields.forEach((field) => {
-    const input = document.getElementById(`f_${field.id}`);
-    const value = input.value.trim();
-    const fieldDiv = input.closest('.field');
-    const isInvalid = field.required && !value;
-    fieldDiv.classList.toggle('invalid', isInvalid);
-    if (isInvalid) valid = false;
-    data[field.id] = value;
-  });
-  return { data, valid };
-}
-
-function resetDemoPanels() {
-  document.getElementById('intakeForm').hidden = false;
-  document.getElementById('intakeForm').closest('.intake-panel').hidden = false;
-  document.getElementById('processingPanel').hidden = true;
-  document.getElementById('analysisPanel').hidden = true;
-  document.getElementById('submitBtn').disabled = false;
-  renderWorkflowViz(-1);
-}
-
-function runProcessing(preset, formData) {
-  document.querySelector('.intake-panel').hidden = true;
-  document.getElementById('processingPanel').hidden = false;
-
-  const stepsEl = document.getElementById('processingSteps');
-  stepsEl.innerHTML = PROCESSING_MESSAGES.map((msg) => `<li><span class="step-dot"></span><span>${msg}</span></li>`).join('');
-  const liEls = Array.from(stepsEl.children);
-
-  pushActivityFeed(`New inquiry received (${preset.business_name})`);
-  renderWorkflowViz(0);
-  bumpMetric('newLeads');
-
-  let i = 0;
-  const workflowMap = [1, 1, 2, 3, 4]; // maps processing step -> workflow viz index
-  const interval = setInterval(() => {
-    if (i > 0) liEls[i - 1].className = 'done';
-    if (i < liEls.length) {
-      liEls[i].className = 'active';
-      renderWorkflowViz(workflowMap[i]);
-      i++;
-    } else {
-      clearInterval(interval);
-      setTimeout(() => finishProcessing(preset, formData), 400);
-    }
-  }, 550);
-}
-
-function finishProcessing(preset, formData) {
-  const result = preset.classify(formData);
-  const response = preset.responseTemplate(formData);
-
-  document.getElementById('processingPanel').hidden = true;
-  document.getElementById('analysisPanel').hidden = false;
-
-  const statusEl = document.getElementById('leadStatus');
-  statusEl.textContent = result.status;
-  statusEl.className = 'tile-value ' + statusClass(result.status);
-
-  document.getElementById('leadIntent').textContent = result.intent;
-
-  const priorityEl = document.getElementById('leadPriority');
-  priorityEl.textContent = result.priority;
-  priorityEl.className = 'tile-value priority-' + result.priority.toLowerCase();
-
-  document.getElementById('leadAction').textContent = result.action;
-  document.getElementById('aiResponseText').textContent = response;
-
-  pushActivityFeed(`AI classified lead as <strong>${result.priority} priority</strong>`);
-  pushActivityFeed('Response generated');
-  pushActivityFeed('Follow-up task created');
-  pushActivityFeed('Lead added to CRM (simulated)');
-
-  bumpMetric('qualifiedLeads');
-  bumpMetric('followUps');
-  if (result.priority === 'HIGH') bumpMetric('appointments');
-  bumpMetric('conversionOpportunity');
-
-  renderWorkflowViz(5);
-}
-
-function statusClass(status) {
-  if (status.startsWith('HOT')) return 'status-hot';
-  if (status.startsWith('WARM')) return 'status-warm';
-  return 'status-new';
-}
-
-// ---------------------------------------------------------------------------
-// Business Diagnostic Demo (P0 live trigger)
+// Sliding-card stepper
 //
-// Unlike the New Inquiry demo above, this section makes a real network call
-// -- fetch('/api/trigger-demo') -- to a same-origin serverless relay that
-// forwards to a live, running n8n workflow with the auth token attached
-// server-side (see website/api/trigger-demo.js). Only the plumbing preset
-// has a real workflow behind it; the other two presets are disabled here
-// and point back to the fully-simulated New Inquiry demo above, per the P0
-// plan's explicit instruction not to build a second live branch for them.
+// Replaces the old flat, horizontally-overflowing row of chips. A fixed-
+// width viewport shows exactly one card at a time; the track slides via a
+// CSS transform as the active step advances. No scrollbar, no new JS
+// dependency -- same hand-rolled-CSS convention as motion.js/hero3d.js,
+// and gated by prefers-reduced-motion the same way those already are.
 // ---------------------------------------------------------------------------
 
-function diagCurrentPreset() { return BUSINESS_PRESETS[state.diagnostic.presetId]; }
+function renderStepViz(trackElId, dotsElId, steps, activeIndex) {
+  const track = document.getElementById(trackElId);
+  const clamped = Math.max(activeIndex, 0);
 
-function renderDiagBusinessSelector() {
-  const el = document.getElementById('diagBusinessSelector');
+  track.innerHTML = steps.map((step, i) => {
+    const cls = i === activeIndex ? 'active' : i < activeIndex ? 'done' : 'upcoming';
+    return '<div class="stepper-card ' + cls + '">'
+      + '<span class="stepper-index">Step ' + (i + 1) + ' of ' + steps.length + '</span>'
+      + '<span class="stepper-label">' + step + '</span>'
+      + '</div>';
+  }).join('');
+  track.style.transform = 'translateX(-' + (clamped * 100) + '%)';
+  track.setAttribute('aria-live', 'polite');
+
+  if (dotsElId) {
+    const dotsEl = document.getElementById(dotsElId);
+    dotsEl.innerHTML = steps.map((_, i) => {
+      const cls = i === activeIndex ? 'active' : i < activeIndex ? 'done' : '';
+      return '<span class="stepper-dot ' + cls + '"></span>';
+    }).join('');
+  }
+}
+
+function renderJourneyStatus(activeIndex) {
+  state.journey.stepIndex = activeIndex;
+  renderStepViz('diagStatusViz', 'diagStatusDots', JOURNEY_STEPS, activeIndex);
+}
+
+// ---------------------------------------------------------------------------
+// Rendering — Inquiry form
+// ---------------------------------------------------------------------------
+
+function renderCategorySelector() {
+  const el = document.getElementById('diagCategorySelector');
   el.innerHTML = '';
-  Object.values(BUSINESS_PRESETS).forEach((preset) => {
+  CATEGORIES.forEach((cat) => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'business-tab' + (preset.id === state.diagnostic.presetId ? ' active' : '');
+    btn.className = 'business-tab' + (cat.id === state.journey.category ? ' active' : '');
     btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-selected', preset.id === state.diagnostic.presetId ? 'true' : 'false');
-    btn.innerHTML = `<span class="tab-icon">${preset.icon}</span> ${preset.industry}`;
-    btn.addEventListener('click', () => selectDiagBusiness(preset.id));
+    btn.setAttribute('aria-selected', cat.id === state.journey.category ? 'true' : 'false');
+    btn.innerHTML = '<span class="tab-icon">' + cat.icon + '</span> ' + cat.label;
+    btn.addEventListener('click', () => selectCategory(cat.id));
     el.appendChild(btn);
   });
 }
 
-function selectDiagBusiness(id) {
-  state.diagnostic.presetId = id;
-  state.diagnostic.result = null;
-  state.diagnostic.selectedAgents = [];
-  state.diagnostic.buildResult = null;
-  renderDiagBusinessSelector();
-  renderDiagRequestReadout();
-  resetDiagnosticResultPanels();
-  renderDiagStatus(-1);
+function selectCategory(id) {
+  state.journey.category = id;
+  const cat = CATEGORIES.find((c) => c.id === id);
+  document.getElementById('diagBusinessNameInput').placeholder = cat.placeholder;
+  renderCategorySelector();
+  validateInquiryForm();
 }
 
-function renderDiagRequestReadout() {
-  const preset = diagCurrentPreset();
-  document.getElementById('diagBusinessName').textContent = preset.business_name;
-  document.getElementById('diagProblem').textContent = preset.problem;
-  document.getElementById('diagSpecialRequest').textContent = preset.specialRequest || '—';
-  document.getElementById('diagNotLiveNote').hidden = preset.hasRealResearch;
-  document.getElementById('runDiagnosticBtn').disabled = !preset.hasRealResearch;
+function questionFieldHtml(q) {
+  const req = q.required ? 'required' : '';
+  return '<div class="field" data-field-id="' + q.id + '">'
+    + '<label for="q_' + q.id + '">' + q.label + '</label>'
+    + '<textarea id="q_' + q.id + '" name="' + q.id + '" ' + req + '></textarea>'
+    + '<span class="field-error">This field is required.</span>'
+    + '</div>';
 }
 
-function resetDiagnosticResultPanels() {
-  document.getElementById('diagResultsPanel').hidden = true;
-  document.getElementById('diagAgentsPanel').hidden = true;
-  document.getElementById('diagSpecPanel').hidden = true;
+function renderQuestionFields() {
+  const questions = state.journey.mode === 'deep' ? DEEP_QUESTIONS : STANDARD_QUESTIONS;
+  document.getElementById('diagQuestionFields').innerHTML = questions.map(questionFieldHtml).join('');
+}
+
+function showModeTooltip(mode) {
+  const tip = document.getElementById('diagModeTooltip');
+  if (mode === 'deep') {
+    tip.textContent = 'This means a developer builds something custom beyond our ready-made templates. It takes a bit more detail up front, but nothing here goes beyond what you’re comfortable sharing.';
+    tip.hidden = false;
+  } else {
+    tip.hidden = true;
+  }
+}
+
+function validateInquiryForm() {
+  const businessName = document.getElementById('diagBusinessNameInput').value.trim();
+  const contactEmail = document.getElementById('diagContactEmailInput').value.trim();
+  const valid = !!state.journey.category && !!businessName && !!contactEmail;
+  document.getElementById('runDiagnosticBtn').disabled = !valid;
+  return valid;
+}
+
+function collectInquiryData() {
+  const questions = state.journey.mode === 'deep' ? DEEP_QUESTIONS : STANDARD_QUESTIONS;
+  const data = {};
+  questions.forEach((q) => {
+    data[q.id] = document.getElementById('q_' + q.id).value.trim();
+  });
+  return {
+    category: state.journey.category,
+    businessName: document.getElementById('diagBusinessNameInput').value.trim(),
+    contactName: document.getElementById('diagContactNameInput').value.trim(),
+    contactRole: document.getElementById('diagContactRoleInput').value.trim(),
+    contactEmail: document.getElementById('diagContactEmailInput').value.trim(),
+    mode: state.journey.mode,
+    problem: data.problem || '',
+    specialRequest: data.specialRequest || '',
+    currentTools: data.currentTools || '',
+    scale: data.scale || '',
+    integrationNeeds: data.integrationNeeds || ''
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Rendering — results / proposal / decision panels
+// ---------------------------------------------------------------------------
+
+function resetResultPanels() {
+  ['diagResultsPanel', 'diagOpportunityPanel', 'diagProposalPanel', 'diagFinalPanel'].forEach((id) => {
+    document.getElementById(id).hidden = true;
+  });
   document.getElementById('diagError').hidden = true;
 }
 
@@ -503,113 +217,214 @@ function showDiagError(message) {
 function findingItemHtml(item) {
   const badge = item.tier || item.confidence || '';
   const body = item.description || item.reasoning || item.proposedSolution || item.objective || '';
-  return `<li><div class="diag-finding-title">${item.title}</div>`
-    + (badge ? `<span class="diag-badge diag-badge-${badge.toLowerCase()}">${badge}</span>` : '')
-    + `<p>${body}</p></li>`;
+  return '<li><div class="diag-finding-title">' + item.title + '</div>'
+    + (badge ? ('<span class="diag-badge diag-badge-' + String(badge).toLowerCase() + '">' + badge + '</span>') : '')
+    + '<p>' + body + '</p></li>';
 }
 
-function renderDiagResults(data) {
+function renderResults(data) {
   document.getElementById('diagResultsPanel').hidden = false;
-  document.getElementById('diagStandardList').innerHTML = data.standard.map(findingItemHtml).join('');
-  document.getElementById('diagResearchList').innerHTML = data.research.map(findingItemHtml).join('');
-  document.getElementById('diagClientRequestedList').innerHTML = data.clientRequested.map(findingItemHtml).join('');
-  document.getElementById('diagSources').textContent = 'Sources: ' + data.sources.map((s) => s.name).join(' · ');
+  document.getElementById('diagStandardList').innerHTML = (data.standard || []).map(findingItemHtml).join('');
+  document.getElementById('diagResearchList').innerHTML = (data.research || []).map(findingItemHtml).join('');
+  document.getElementById('diagClientRequestedList').innerHTML = (data.clientRequested || []).map(findingItemHtml).join('');
+  const sources = data.sources || [];
+  document.getElementById('diagSources').textContent = sources.length ? ('Sources: ' + sources.map((s) => s.name || s.url).join(' · ')) : '';
 }
 
-function renderDiagAgents() {
-  const preset = diagCurrentPreset();
-  const templates = AUTOMATION_TEMPLATES[preset.id] || [];
-  const el = document.getElementById('diagAgentList');
+function allFindings(data) {
+  return [].concat(data.standard || [], data.research || [], data.clientRequested || []);
+}
+
+function updateIssueProposalButton() {
+  const hasResearch = !!(state.journey.diagnosticResult && state.journey.diagnosticResult.research && state.journey.diagnosticResult.research.length);
+  document.getElementById('issueProposalBtn').disabled = !hasResearch || state.journey.selectedOpportunities.length === 0;
+}
+
+function renderOpportunityPicker(data) {
+  const el = document.getElementById('diagOpportunityList');
   el.innerHTML = '';
-  templates.forEach((name) => {
+  const seen = new Set();
+  allFindings(data).forEach((item) => {
+    if (!item.title || seen.has(item.title)) return;
+    seen.add(item.title);
     const label = document.createElement('label');
     label.className = 'diag-agent-option';
-    label.innerHTML = `<input type="checkbox" value="${name}"> ${name}`;
+    label.innerHTML = '<input type="checkbox" value="' + item.title + '"> ' + item.title;
     label.querySelector('input').addEventListener('change', (e) => {
-      const selected = state.diagnostic.selectedAgents;
-      const idx = selected.indexOf(name);
-      if (e.target.checked && idx === -1) selected.push(name);
+      const selected = state.journey.selectedOpportunities;
+      const idx = selected.indexOf(item.title);
+      if (e.target.checked && idx === -1) selected.push(item.title);
       else if (!e.target.checked && idx > -1) selected.splice(idx, 1);
+      updateIssueProposalButton();
     });
     el.appendChild(label);
   });
-  document.getElementById('diagAgentsPanel').hidden = false;
+
+  // A proposal needs a real research finding to back it (see issueProposal()).
+  // Gated centrally in updateIssueProposalButton() so the checkbox handler
+  // above can't accidentally re-enable submission when there isn't one.
+  document.getElementById('diagNoResearchNote').hidden = !!(data.research && data.research.length);
+  updateIssueProposalButton();
+  document.getElementById('diagOpportunityPanel').hidden = false;
 }
 
-function renderDiagSpec(data) {
-  document.getElementById('diagSpecPanel').hidden = false;
-  document.getElementById('diagSpecName').textContent = data.automationName;
-  document.getElementById('diagSpecTrigger').textContent = data.trigger;
-  document.getElementById('diagSpecInputs').innerHTML = data.inputs.map((i) => `<li>${i}</li>`).join('');
-  document.getElementById('diagSpecSteps').innerHTML = data.steps.map((s) => `<li>${s}</li>`).join('');
-  document.getElementById('diagSpecIntegrations').innerHTML = data.integrations.map((i) => `<li>${i}</li>`).join('');
-  document.getElementById('diagSpecNotes').innerHTML = data.developerNotes.map((n) => `<li>${n}</li>`).join('');
-  document.getElementById('diagSpecStatus').textContent = 'Status: ' + data.status.toUpperCase();
+function renderProposalSent(data) {
+  document.getElementById('diagProposalPanel').hidden = false;
+  document.getElementById('diagProposalRef').textContent = data.proposalRef || '';
+  document.getElementById('diagProposalEmailNote').hidden = !data.emailSent;
+}
+
+function renderFinal(message) {
+  document.getElementById('diagFinalPanel').hidden = false;
+  document.getElementById('diagFinalMessage').textContent = message;
+}
+
+// ---------------------------------------------------------------------------
+// Fetch orchestration — every call here hits a real, published n8n workflow
+// through a same-origin Vercel relay. No simulation.
+// ---------------------------------------------------------------------------
+
+async function postRelay(endpoint, body) {
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const payload = await res.json();
+  return { ok: res.ok, status: res.status, payload: payload };
 }
 
 async function runDiagnostic() {
-  const preset = diagCurrentPreset();
-  if (!preset.hasRealResearch) return;
+  if (!validateInquiryForm()) return;
 
-  resetDiagnosticResultPanels();
-  state.diagnostic.result = null;
-  state.diagnostic.selectedAgents = [];
-  state.diagnostic.buildResult = null;
-  renderDiagStatus(1); // RECEIVED (done) -> RESEARCH RUNNING (active): real click + real fetch about to be sent
+  resetResultPanels();
+  state.journey = Object.assign(newJourneyState(), {
+    category: state.journey.category,
+    mode: state.journey.mode,
+    requestId: crypto.randomUUID(),
+    stepIndex: state.journey.stepIndex
+  });
+
+  const inquiry = collectInquiryData();
+  state.journey.form = inquiry;
+
+  renderJourneyStatus(1); // RECEIVED (done) -> RESEARCHING (active)
   document.getElementById('runDiagnosticBtn').disabled = true;
 
   try {
-    const res = await fetch('/api/trigger-demo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: 'diagnostic', businessId: preset.id, problem: preset.problem, specialRequest: preset.specialRequest })
-    });
-    const payload = await res.json();
-    if (!res.ok) throw new Error(payload.error || 'Diagnostic request failed');
+    const { ok, payload } = await postRelay('/api/trigger-demo', Object.assign(
+      { target: 'diagnostic', requestId: state.journey.requestId }, inquiry
+    ));
 
-    state.diagnostic.result = payload;
-    if (payload.hasRealResearch) {
-      renderDiagStatus(4); // RESEARCH COMPLETE + DIAGNOSTIC READY (done) -> AWAITING APPROVAL (active): real response arrived
-      renderDiagResults(payload);
-      renderDiagAgents();
+    if (!ok) {
+      showDiagError(payload.error || 'That request could not be processed. Please check the form and try again.');
+      renderJourneyStatus(0);
+      return;
+    }
+
+    state.journey.diagnosticResult = payload;
+
+    if (payload.researchStatus === 'complete') {
+      renderJourneyStatus(2); // RESEARCH READY
+      renderResults(payload);
+      renderOpportunityPicker(payload);
+    } else if (payload.researchStatus === 'not_in_category' || payload.researchStatus === 'rate_limited' || payload.researchStatus === 'no_credible_data') {
+      showDiagError(payload.message || 'This request could not be researched right now.');
+      renderJourneyStatus(0);
     } else {
-      showDiagError(payload.message || 'Live diagnostic research is not connected for this business.');
+      showDiagError(RESEARCH_STATUS_MESSAGES[payload.researchStatus] || payload.message || 'Please try again in a moment.');
+      renderJourneyStatus(0);
     }
   } catch (err) {
     showDiagError('Could not reach the live diagnostic workflow. Please try again.');
+    renderJourneyStatus(0);
   } finally {
     document.getElementById('runDiagnosticBtn').disabled = false;
   }
 }
 
-async function approveDiagnostic() {
-  const preset = diagCurrentPreset();
-  const selectedAgents = state.diagnostic.selectedAgents;
+async function issueProposal() {
+  const j = state.journey;
+  if (!j.diagnosticResult || j.selectedOpportunities.length === 0) return;
 
-  document.getElementById('diagError').hidden = true;
-  renderDiagStatus(6); // APPROVED (done) -> BUILDING AUTOMATION (active): real click + real fetch about to be sent
-  document.getElementById('approveDiagnosticBtn').disabled = true;
+  // Issue Proposal's own validation requires diagnosticFinding.description --
+  // only research[] items have that shape (description/evidence/source).
+  // standard[]/clientRequested[] items don't, regardless of which the visitor
+  // selected as an opportunity to build. renderOpportunityPicker() already
+  // keeps "Send Me a Proposal" disabled unless a real research finding exists.
+  const finding = (j.diagnosticResult.research && j.diagnosticResult.research[0]) || null;
+  if (!finding) {
+    showDiagError('A proposal needs at least one research finding, which this business doesn’t have yet.');
+    return;
+  }
+
+  document.getElementById('issueProposalBtn').disabled = true;
+  renderJourneyStatus(3); // PROPOSAL SENT (about to be)
 
   try {
-    const res = await fetch('/api/trigger-demo', {
+    const { ok, payload } = await postRelay('/api/trigger-demo', {
+      target: 'proposal',
+      requestId: j.requestId,
+      category: j.category,
+      businessName: j.form.businessName,
+      contactName: j.form.contactName,
+      contactRole: j.form.contactRole,
+      contactEmail: j.form.contactEmail,
+      mode: j.mode,
+      selectedOpportunities: j.selectedOpportunities,
+      diagnosticFinding: finding,
+      currentTools: j.form.currentTools,
+      scale: j.form.scale,
+      integrationNeeds: j.form.integrationNeeds
+    });
+
+    if (!ok || payload.status !== 'proposal_issued') {
+      showDiagError((payload && payload.error) || 'Could not issue the proposal. Please try again.');
+      renderJourneyStatus(2);
+      return;
+    }
+
+    j.proposal = payload;
+    renderJourneyStatus(4); // AWAITING YOUR DECISION
+    renderProposalSent(payload);
+  } catch (err) {
+    showDiagError('Could not reach the proposal workflow. Please try again.');
+    renderJourneyStatus(2);
+  } finally {
+    document.getElementById('issueProposalBtn').disabled = false;
+  }
+}
+
+async function decideNow(decision) {
+  const j = state.journey;
+  if (!j.proposal || !j.proposal.token) return;
+
+  document.getElementById('approveNowBtn').disabled = true;
+  document.getElementById('requestChangesBtn').disabled = true;
+
+  try {
+    const res = await fetch('/api/decision', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: 'approve', businessId: preset.id, selectedAgents: selectedAgents, approvedBy: 'Judge (competition demo)' })
+      body: JSON.stringify({ token: j.proposal.token, decision: decision })
     });
     const payload = await res.json();
-    if (!res.ok) throw new Error(payload.error || 'Automation build request failed');
 
-    if (payload.status === 'demo-build-ready') {
-      state.diagnostic.buildResult = payload;
-      renderDiagStatus(8); // AUTOMATION SPEC READY + DEVELOPER BRIEF READY: real response arrived
-      renderDiagSpec(payload);
+    j.decision = payload;
+    if (payload.status === 'approved') {
+      renderJourneyStatus(6); // APPROVED -> BUILD STARTED
+      renderFinal(payload.message || 'Thank you — your build has started. A handover pack will follow by email once it is ready.');
+      renderJourneyStatus(7); // HANDOVER ON THE WAY
+    } else if (payload.status === 'changes_requested') {
+      renderFinal(payload.message || 'Thanks — we’ve recorded your requested changes. We’ll follow up directly.');
     } else {
-      showDiagError(payload.message || 'Automation build is not available for this business.');
+      showDiagError(payload.message || 'This proposal could not be updated. Please contact us directly.');
     }
   } catch (err) {
-    showDiagError('Could not reach the automation-builder workflow. Please try again.');
+    showDiagError('Could not reach the approval workflow. Please try again, or use the link in your email.');
   } finally {
-    document.getElementById('approveDiagnosticBtn').disabled = false;
+    document.getElementById('approveNowBtn').disabled = false;
+    document.getElementById('requestChangesBtn').disabled = false;
   }
 }
 
@@ -618,43 +433,40 @@ async function approveDiagnostic() {
 // ---------------------------------------------------------------------------
 
 function init() {
-  renderBusinessSelector();
-  renderIntakeForm();
-  renderDashboard();
+  renderCategorySelector();
+  renderQuestionFields();
+  renderJourneyStatus(-1);
 
-  document.getElementById('intakeForm').addEventListener('submit', (e) => {
+  document.getElementById('diagBusinessNameInput').addEventListener('input', validateInquiryForm);
+  document.getElementById('diagContactEmailInput').addEventListener('input', validateInquiryForm);
+
+  document.getElementById('diagModeSelect').addEventListener('change', (e) => {
+    state.journey.mode = e.target.value === 'deep' ? 'deep' : 'standard';
+    showModeTooltip(state.journey.mode);
+    renderQuestionFields();
+  });
+
+  document.getElementById('diagInquiryForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    const preset = currentPreset();
-    const { data, valid } = collectFormData(preset);
-    if (!valid) return;
-    document.getElementById('submitBtn').disabled = true;
-    runProcessing(preset, data);
+    runDiagnostic();
   });
-
-  document.getElementById('resetBtn').addEventListener('click', () => {
-    document.getElementById('intakeForm').reset();
-    resetDemoPanels();
-  });
-
-  document.getElementById('demoModeInfo').addEventListener('click', (e) => {
+  document.getElementById('issueProposalBtn').addEventListener('click', (e) => {
     e.preventDefault();
-    document.getElementById('demoModeModal').hidden = false;
+    issueProposal();
   });
-  document.getElementById('closeModal').addEventListener('click', () => {
-    document.getElementById('demoModeModal').hidden = true;
+  document.getElementById('approveNowBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    decideNow('approved');
   });
-
-  renderDiagBusinessSelector();
-  renderDiagRequestReadout();
-  renderDiagStatus(-1);
-  document.getElementById('runDiagnosticBtn').addEventListener('click', runDiagnostic);
-  document.getElementById('approveDiagnosticBtn').addEventListener('click', approveDiagnostic);
+  document.getElementById('requestChangesBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    decideNow('changes_requested');
+  });
 }
 
 // The script is deferred and sits at the end of <body>, so the DOM is already
 // parsed by the time this runs. Calling init() straight away paints the
-// JS-populated containers (selector, form, dashboard, workflow) before first
-// paint instead of one tick after it, which is what caused the layout shift.
+// JS-populated containers before first paint instead of one tick after it.
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
