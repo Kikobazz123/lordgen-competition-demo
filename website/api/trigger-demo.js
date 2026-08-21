@@ -37,7 +37,13 @@ const TARGETS = {
 // per target (diagnostic vs approve), read from its own env var above.
 const HEADER_NAME = 'X-LordGen-Demo-Token';
 
-const UPSTREAM_TIMEOUT_MS = 15000;
+// A real live-research call (Tavily search + Gemini synthesis) observed
+// taking ~21s in production -- this relay's old 15s ceiling aborted while
+// n8n was still legitimately working, surfacing a false "could not reach"
+// error even though the workflow went on to succeed server-side. 30s is
+// comfortable headroom above the observed duration; still short enough to
+// stay well under typical Vercel serverless function time limits.
+const UPSTREAM_TIMEOUT_MS = 30000;
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
