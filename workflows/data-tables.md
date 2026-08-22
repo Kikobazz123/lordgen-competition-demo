@@ -20,7 +20,7 @@ Idempotency + rate-limit log shared by all 5 live workflows (Diagnostic, Issue P
 
 ## `LordGen Approvals` (`qR88lsLUiZszF5Jf`)
 
-One row per issued proposal. Created by Issue Proposal, read/updated by Approval Decision (token lookup, expiry, recording the client's decision).
+One row per issued proposal. Created by Issue Proposal, read/updated by Approval Decision (token lookup, expiry, recording the client's decision), and — since 2026-08-22 — by Mark Connected and Tier A Intake (both read/update `connection_token`/`handover_status`/`automation_spec_json` against the same row).
 
 | Column | Type |
 |---|---|
@@ -37,7 +37,25 @@ One row per issued proposal. Created by Issue Proposal, read/updated by Approval
 | `change_notes` | string |
 | `proposal_json` | string (the full proposal payload, replayed into Approve/Handover on approval) |
 | `expires_at` | string (14 days from issue) |
+| `connection_token` | string (added 2026-08-22 — a second token, generated on approval when a real system connection is still needed; distinct from `token` above, which is spent once the approve/reject decision is made) |
+| `handover_status` | string (added 2026-08-22 — `pending_connection` (developer must click Mark Connected) / `awaiting_self_serve_connection` (client must connect their own Tally form) / `sent` (Handover Pack has gone out)) |
+| `automation_spec_json` | string (added 2026-08-22 — Approve's full response, stored so Mark Connected / Tier A Intake can replay it into Handover later without re-calling Approve) |
+
+## `LordGen Tier A Submissions` (`LORYfGjjk9AtPiLw`, added 2026-08-22)
+
+One row per real submission through a client's connected Tally form, across all categories. Written by the Tier A Intake workflow's `Log Submission` node; not read by anything else in the pipeline (audit/support trail only).
+
+| Column | Type |
+|---|---|
+| `connection_token` | string (links back to the `LordGen Approvals` row) |
+| `business_name` | string |
+| `category` | string |
+| `customer_name` | string |
+| `customer_contact` | string (email or phone, whichever the submission had) |
+| `submission_details_json` | string (every extracted field, for audit/support) |
+| `status` | string (`received` / `incomplete`) |
+| `received_at` | date |
 
 ## Recreating in a fresh instance
 
-Both tables need to exist with these exact column names before importing `workflows/live-*.json` — every node above references its table by ID, so after import each `dataTable` node's table reference needs repointing to the new table's ID (same column names, different ID). Not a code change, just a resource-locator update per `dataTable` node.
+All three tables need to exist with these exact column names before importing `workflows/live-*.json` — every node above references its table by ID, so after import each `dataTable` node's table reference needs repointing to the new table's ID (same column names, different ID). Not a code change, just a resource-locator update per `dataTable` node. Note `workflows/live-*.json` itself is currently one commit-set behind the live instance (see `workflows/README.md`) and doesn't yet include the Mark Connected or Tier A Intake workflows.
