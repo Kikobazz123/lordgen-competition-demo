@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "website/api/render-pdf.js": {
+      "maxDuration": 30
+    }
+  }
+}

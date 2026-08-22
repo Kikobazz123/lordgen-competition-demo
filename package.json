@@ -2,11 +2,13 @@
   "name": "lordgen-handover-generator",
   "version": "0.1.0",
   "private": true,
-  "description": "LordGen client-document generator (LORDGEN_HANDOVER_GENERATOR_BUILD.md). Schema validation, gates, section builders, and HTML template are dependency-free by design; Playwright is the sole dependency, used only for local watermark-free PDF rendering (tools/render_pdf.js).",
+  "description": "LordGen client-document generator (LORDGEN_HANDOVER_GENERATOR_BUILD.md) plus the live site's serverless PDF renderer (website/api/render-pdf.js). Schema validation, gates, section builders, and HTML template are dependency-free by design; Playwright/Chromium is the one thing genuinely needed for watermark-free HTML->PDF rendering, both locally (tools/render_pdf.js, full `playwright`) and on Vercel (website/api/render-pdf.js, `playwright-core` + `@sparticuz/chromium`'s serverless-packaged Chromium binary, since Vercel functions ship no browser and full `playwright`'s bundled browser download is too large for serverless deploy limits).",
   "scripts": {
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
-    "playwright": "^1.48.0"
+    "playwright": "^1.48.0",
+    "playwright-core": "^1.48.0",
+    "@sparticuz/chromium": "^131.0.1"
   }
 }
