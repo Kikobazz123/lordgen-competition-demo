@@ -27,3 +27,6 @@ docs/demo-business.md
 .DS_Store
 Thumbs.db
 *.log
+
+# Playwright MCP run artifacts (traces/screenshots from live browser testing)
+.playwright-mcp/
