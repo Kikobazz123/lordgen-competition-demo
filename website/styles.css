@@ -429,6 +429,8 @@ body {
 .diag-finding-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
 .diag-finding-title { font-size: 0.9rem; font-weight: 700; color: var(--bone); }
 .diag-finding-col p { font-size: 0.82rem; color: var(--slate); margin: 4px 0 0; }
+.diag-finding-solution { color: var(--bone) !important; }
+.diag-finding-solution strong { color: var(--gold); }
 .diag-badge {
   display: inline-block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em;
   text-transform: uppercase; padding: 2px 7px; margin-top: 4px; border: 1px solid var(--brass); color: var(--slate);

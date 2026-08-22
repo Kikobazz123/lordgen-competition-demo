@@ -229,10 +229,13 @@ function showDiagError(message) {
 
 function findingItemHtml(item) {
   const badge = item.tier || item.confidence || '';
-  const body = item.description || item.reasoning || item.proposedSolution || item.objective || '';
+  const body = item.description || item.reasoning || item.objective || '';
+  const solution = item.proposedAutomation || item.proposedSolution || '';
   return '<li><div class="diag-finding-title">' + item.title + '</div>'
     + (badge ? ('<span class="diag-badge diag-badge-' + String(badge).toLowerCase() + '">' + badge + '</span>') : '')
-    + '<p>' + body + '</p></li>';
+    + (body ? ('<p>' + body + '</p>') : '')
+    + (solution ? ('<p class="diag-finding-solution"><strong>Automation opportunity:</strong> ' + solution + '</p>') : '')
+    + '</li>';
 }
 
 function renderResults(data) {
