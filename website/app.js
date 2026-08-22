@@ -30,22 +30,35 @@ const CATEGORIES = [
   { id: 'logistics', icon: '\u{1F69A}', label: 'Logistics', placeholder: 'e.g. your company’s name' }
 ];
 
-// Standard mode maps to exactly the two free-text fields the live Diagnostic
-// workflow actually reads (problem, specialRequest) -- no third question
-// invented just to round the count up; the backend has nowhere to put one.
+// Standard mode is autonomous by design: contact info plus optional links
+// for the AI to research from -- no self-reported "what's your problem"
+// question. The AI finds the pain points itself (Research Agent, live
+// Diagnostic workflow) rather than relying on the visitor to describe them.
 const STANDARD_QUESTIONS = [
-  { id: 'problem', label: 'What’s the biggest day-to-day challenge in your business right now?', required: true },
-  { id: 'specialRequest', label: 'Anything specific you’d like automated? (optional)', required: false }
+  { id: 'website', label: 'Business website (optional, helps our research)', required: false },
+  { id: 'socialMedia', label: 'Social media / Instagram / Facebook page (optional)', required: false }
 ];
 
 // Deep mode adds the fuller questionnaire fields the live workflows already
 // accept (currentTools/scale/integrationNeeds), matching
-// docs/execution-plan-template.md's depth.
+// docs/execution-plan-template.md's depth, plus the same optional links.
 const DEEP_QUESTIONS = STANDARD_QUESTIONS.concat([
   { id: 'currentTools', label: 'What tools or software do you currently use for this?', required: false },
   { id: 'scale', label: 'Roughly how many of these do you handle per week?', required: false },
   { id: 'integrationNeeds', label: 'Any specific systems this needs to connect to?', required: false }
 ]);
+
+// LordGen's real ready-made automation inventory, one per category today --
+// mirrors Issue Proposal's own TEMPLATE_LIBRARY (n8n workflow 9qzZd5vtRmNo2g4C)
+// exactly, so the dropdown shown after diagnosis names a real, buildable
+// automation, and currentSystemQuestion mirrors that same template's actual
+// first requirement (what the business needs to provide to connect it).
+const TEMPLATE_INVENTORY = {
+  eatery: { name: 'Order and Reservation Confirmation', currentSystemQuestion: 'What do you currently use to take orders or reservations?' },
+  law_firm: { name: 'Client Intake and Confirmation', currentSystemQuestion: 'What do you currently use to take client inquiries?' },
+  salon_beauty: { name: 'Booking Confirmation', currentSystemQuestion: 'What do you currently use to take bookings?' },
+  logistics: { name: 'Dispatch Capture and Confirmation', currentSystemQuestion: 'What do you currently use to capture orders or dispatches?' }
+};
 
 const JOURNEY_STEPS = [
   'RECEIVED', 'RESEARCHING', 'RESEARCH READY', 'PROPOSAL SENT',
@@ -202,6 +215,8 @@ function collectInquiryData() {
     contactRole: document.getElementById('diagContactRoleInput').value.trim(),
     contactEmail: document.getElementById('diagContactEmailInput').value.trim(),
     mode: state.journey.mode,
+    website: data.website || '',
+    socialMedia: data.socialMedia || '',
     problem: data.problem || '',
     specialRequest: data.specialRequest || '',
     currentTools: data.currentTools || '',
@@ -223,7 +238,46 @@ function resetResultPanels() {
 
 function showDiagError(message) {
   const el = document.getElementById('diagError');
+  el.innerHTML = '';
   el.textContent = message;
+  el.hidden = false;
+}
+
+// The no_credible_data case specifically needs real links (mailto/WhatsApp),
+// which plain textContent can't carry -- built via DOM nodes rather than
+// innerHTML with string concatenation so the visitor-typed businessName
+// (the one dynamic piece) can never be interpreted as markup.
+function showDiagHonestEmptyState(businessName) {
+  const el = document.getElementById('diagError');
+  el.innerHTML = '';
+
+  const intro = document.createElement('p');
+  intro.textContent = 'We couldn’t find a public system or online presence for ' + businessName + ' to research automatically. This usually means one of two things:';
+  el.appendChild(intro);
+
+  const list = document.createElement('ul');
+
+  const newBiz = document.createElement('li');
+  newBiz.textContent = 'You’re a new business without an existing system yet — our developers can build you a management system first, before automation.';
+  list.appendChild(newBiz);
+
+  const noPresence = document.createElement('li');
+  noPresence.append('You have a business we couldn’t find online — if you have a business page or social page, or would like to talk this through directly, please ');
+  const mailLink = document.createElement('a');
+  mailLink.href = 'mailto:zaxellimited360@gmail.com';
+  mailLink.textContent = 'email us';
+  noPresence.appendChild(mailLink);
+  noPresence.append(' or ');
+  const waLink = document.createElement('a');
+  waLink.href = 'https://wa.me/qr/TPDAVEJOJ53QN1';
+  waLink.target = '_blank';
+  waLink.rel = 'noopener';
+  waLink.textContent = 'reach us on WhatsApp';
+  noPresence.appendChild(waLink);
+  noPresence.append(' for further instruction.');
+  list.appendChild(noPresence);
+
+  el.appendChild(list);
   el.hidden = false;
 }
 
@@ -238,8 +292,34 @@ function findingItemHtml(item) {
     + '</li>';
 }
 
+// Lives inside #diagResultsPanel (not a new panel) so it fades in with the
+// rest of that panel's content via the site's existing [data-reveal]
+// mechanism -- see renderResults() below, which is this block's only caller.
+function renderRecommendation(data) {
+  const wrap = document.getElementById('diagRecommendationBlock');
+  const rec = data.recommendedTemplate;
+  const inventory = TEMPLATE_INVENTORY[data.category];
+
+  // recommendedTemplate is always {name, reasoning} from the backend, never
+  // bare null -- a consistent shape is more reliable for the LLM's
+  // schema-by-example structured output than a sometimes-object/sometimes-
+  // null field. Empty name is how "no good fit" is represented.
+  if (!rec || !rec.name || !inventory) {
+    const reason = (rec && rec.reasoning) || 'This one goes beyond our ready-made automations -- a developer will design something custom for you.';
+    wrap.innerHTML = '<p class="field-hint">' + reason + '</p>';
+    wrap.hidden = false;
+    return;
+  }
+
+  wrap.innerHTML = '<div class="field"><label for="diagRecommendedTemplateSelect">Recommended Automation</label>'
+    + '<select id="diagRecommendedTemplateSelect"><option value="' + inventory.name + '" selected>' + inventory.name + '</option></select></div>'
+    + (rec.reasoning ? ('<p class="field-hint">' + rec.reasoning + '</p>') : '');
+  wrap.hidden = false;
+}
+
 function renderResults(data) {
   document.getElementById('diagResultsPanel').hidden = false;
+  renderRecommendation(data);
   document.getElementById('diagStandardList').innerHTML = (data.standard || []).map(findingItemHtml).join('');
   document.getElementById('diagResearchList').innerHTML = (data.research || []).map(findingItemHtml).join('');
   document.getElementById('diagClientRequestedList').innerHTML = (data.clientRequested || []).map(findingItemHtml).join('');
@@ -251,15 +331,24 @@ function allFindings(data) {
   return [].concat(data.standard || [], data.research || [], data.clientRequested || []);
 }
 
+// Connection details are required, not optional -- a proposal built without
+// them isn't actually buildable without another round of back-and-forth, so
+// "Send Me a Proposal" stays disabled until both are filled, the same way it
+// already stays disabled without a real research finding.
 function updateIssueProposalButton() {
   const hasResearch = !!(state.journey.diagnosticResult && state.journey.diagnosticResult.research && state.journey.diagnosticResult.research.length);
-  document.getElementById('issueProposalBtn').disabled = !hasResearch || state.journey.selectedOpportunities.length === 0;
+  const currentSystem = document.getElementById('diagCurrentSystemInput').value.trim();
+  const senderEmail = document.getElementById('diagSenderEmailInput').value.trim();
+  const hasConnectionDetails = !!currentSystem && !!senderEmail;
+  document.getElementById('issueProposalBtn').disabled = !hasResearch || state.journey.selectedOpportunities.length === 0 || !hasConnectionDetails;
 }
 
 function renderOpportunityPicker(data) {
   const el = document.getElementById('diagOpportunityList');
   el.innerHTML = '';
   const seen = new Set();
+  const connectionDetails = document.getElementById('diagConnectionDetails');
+
   allFindings(data).forEach((item) => {
     if (!item.title || seen.has(item.title)) return;
     seen.add(item.title);
@@ -271,15 +360,22 @@ function renderOpportunityPicker(data) {
       const idx = selected.indexOf(item.title);
       if (e.target.checked && idx === -1) selected.push(item.title);
       else if (!e.target.checked && idx > -1) selected.splice(idx, 1);
+      // Progressive reveal within this same card, not a separate panel --
+      // shows once the visitor has picked at least one opportunity.
+      connectionDetails.classList.toggle('is-visible', selected.length > 0);
       updateIssueProposalButton();
     });
     el.appendChild(label);
   });
 
+  const inventory = TEMPLATE_INVENTORY[data.category];
+  document.getElementById('diagCurrentSystemLabel').textContent = inventory ? inventory.currentSystemQuestion : 'What do you currently use for this?';
+
   // A proposal needs a real research finding to back it (see issueProposal()).
   // Gated centrally in updateIssueProposalButton() so the checkbox handler
   // above can't accidentally re-enable submission when there isn't one.
   document.getElementById('diagNoResearchNote').hidden = !!(data.research && data.research.length);
+  connectionDetails.classList.remove('is-visible');
   updateIssueProposalButton();
   document.getElementById('diagOpportunityPanel').hidden = false;
 }
@@ -344,7 +440,10 @@ async function runDiagnostic() {
       renderJourneyStatus(2); // RESEARCH READY
       renderResults(payload);
       renderOpportunityPicker(payload);
-    } else if (payload.researchStatus === 'not_in_category' || payload.researchStatus === 'rate_limited' || payload.researchStatus === 'no_credible_data') {
+    } else if (payload.researchStatus === 'no_credible_data') {
+      showDiagHonestEmptyState(inquiry.businessName);
+      renderJourneyStatus(0);
+    } else if (payload.researchStatus === 'not_in_category' || payload.researchStatus === 'rate_limited') {
       showDiagError(payload.message || 'This request could not be researched right now.');
       renderJourneyStatus(0);
     } else {
@@ -374,6 +473,13 @@ async function issueProposal() {
     return;
   }
 
+  const currentSystem = document.getElementById('diagCurrentSystemInput').value.trim();
+  const senderEmail = document.getElementById('diagSenderEmailInput').value.trim();
+  if (!currentSystem || !senderEmail) {
+    showDiagError('Please answer both connection questions above so we know what your automation needs to connect to.');
+    return;
+  }
+
   document.getElementById('issueProposalBtn').disabled = true;
   renderJourneyStatus(3); // PROPOSAL SENT (about to be)
 
@@ -391,7 +497,9 @@ async function issueProposal() {
       diagnosticFinding: finding,
       currentTools: j.form.currentTools,
       scale: j.form.scale,
-      integrationNeeds: j.form.integrationNeeds
+      integrationNeeds: j.form.integrationNeeds,
+      currentSystem: currentSystem,
+      senderEmail: senderEmail
     });
 
     if (!ok || payload.status !== 'proposal_issued') {
@@ -455,6 +563,8 @@ function init() {
 
   document.getElementById('diagBusinessNameInput').addEventListener('input', validateInquiryForm);
   document.getElementById('diagContactEmailInput').addEventListener('input', validateInquiryForm);
+  document.getElementById('diagCurrentSystemInput').addEventListener('input', updateIssueProposalButton);
+  document.getElementById('diagSenderEmailInput').addEventListener('input', updateIssueProposalButton);
 
   document.getElementById('diagModeSelect').addEventListener('change', (e) => {
     state.journey.mode = e.target.value === 'deep' ? 'deep' : 'standard';

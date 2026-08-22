@@ -450,6 +450,29 @@ body {
 .diag-impact-note .tile-label { display: block; margin-bottom: 4px; }
 .diag-spec-panel p { color: var(--bone); font-size: 0.92rem; margin: 0 0 12px; }
 
+/* Recommendation block lives inside #diagResultsPanel (not a new panel) --
+   fades in with the rest of that panel via the existing [data-reveal]
+   mechanism, so no motion rules are needed here, only the callout look. */
+.diag-recommendation-block {
+  background: var(--ink); border-left: 3px solid var(--gold);
+  padding: 16px 18px; margin: 0 0 20px;
+}
+.diag-recommendation-block .field { max-width: 360px; }
+.diag-recommendation-block .field-hint { margin: 8px 0 0; }
+
+/* Connection-details fields live inside #diagOpportunityPanel (not a new
+   panel) -- collapsed by default, revealed once an opportunity is picked.
+   Eased consistently with the site's existing .reveal-in timing (0.5s ease). */
+.diag-connection-details {
+  max-height: 0; opacity: 0; overflow: hidden;
+  transition: max-height .5s ease, opacity .5s ease, margin .5s ease;
+}
+.diag-connection-details.is-visible {
+  max-height: 260px; opacity: 1; margin: 4px 0 20px;
+}
+.diag-connection-details .field-hint { margin: 0 0 12px; }
+.diag-connection-details .field { margin-bottom: 14px; }
+
 /* ===========================================================================
    Site-upgrade layer: nav CTA / mobile menu, trust strip, problem section,
    operating model, solutions, prototype badges, proof, FAQ, about, final CTA.
