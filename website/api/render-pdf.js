@@ -15,7 +15,21 @@
 // nodes call this same-origin-to-Vercel endpoint with a header-auth token
 // (PDF_RENDER_TOKEN), server-side only, never exposed to a browser.
 
-const path = require('path');
+// Real, live failure confirmed on this deployment (not guessed): Chromium
+// exited with "libnss3.so: cannot open shared object file". Read
+// node_modules/@sparticuz/chromium/build/index.js and helper.js directly to
+// find why: the package only inflates its bundled shared-library tarball
+// (al2023.tar.br, which contains libnss3.so and friends) and sets
+// LD_LIBRARY_PATH when isRunningInAwsLambda()/isRunningInAwsLambdaNode20()
+// detects AWS_EXECUTION_ENV or AWS_LAMBDA_JS_RUNTIME -- checked once, at
+// module load. Vercel's Node runtime sets neither, so on Vercel that
+// extraction never runs and the .so files never reach disk at all; setting
+// LD_LIBRARY_PATH from inside the handler (this file's first attempt at this
+// fix) pointed at a directory that was always empty. This line must run
+// BEFORE the require() below, since the detection is a top-level check that
+// only runs once at first import.
+process.env.AWS_LAMBDA_JS_RUNTIME ??= 'nodejs20.x';
+
 const chromium = require('@sparticuz/chromium');
 const { chromium: playwrightChromium } = require('playwright-core');
 
@@ -44,24 +58,9 @@ module.exports = async function handler(req, res) {
 
   let browser;
   try {
-    const executablePath = await chromium.executablePath();
-    // Real, live failure (confirmed on this deployment, not assumed):
-    // "/tmp/chromium: error while loading shared libraries: libnss3.so:
-    // cannot open shared object file". @sparticuz/chromium unpacks its
-    // bundled Chromium binary AND its required .so files (libnss3,
-    // libnspr4, etc.) into the same directory as executablePath, but that
-    // directory isn't necessarily on Vercel's default dynamic-linker
-    // search path -- pointing LD_LIBRARY_PATH at it lets the loader find
-    // them. Derived from the real executablePath rather than a hardcoded
-    // "/tmp" so this stays correct if the unpack location ever changes.
-    const chromiumDir = path.dirname(executablePath);
-    process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
-      ? chromiumDir + ':' + process.env.LD_LIBRARY_PATH
-      : chromiumDir;
-
     browser = await playwrightChromium.launch({
       args: chromium.args,
-      executablePath: executablePath,
+      executablePath: await chromium.executablePath(),
       headless: true
     });
     const page = await browser.newPage();
