@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/render-pdf.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/connect/:token",
+      "destination": "/api/intake?token=:token"
+    }
+  ]
+}
