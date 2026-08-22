@@ -15,6 +15,7 @@
 // nodes call this same-origin-to-Vercel endpoint with a header-auth token
 // (PDF_RENDER_TOKEN), server-side only, never exposed to a browser.
 
+const path = require('path');
 const chromium = require('@sparticuz/chromium');
 const { chromium: playwrightChromium } = require('playwright-core');
 
@@ -43,9 +44,24 @@ module.exports = async function handler(req, res) {
 
   let browser;
   try {
+    const executablePath = await chromium.executablePath();
+    // Real, live failure (confirmed on this deployment, not assumed):
+    // "/tmp/chromium: error while loading shared libraries: libnss3.so:
+    // cannot open shared object file". @sparticuz/chromium unpacks its
+    // bundled Chromium binary AND its required .so files (libnss3,
+    // libnspr4, etc.) into the same directory as executablePath, but that
+    // directory isn't necessarily on Vercel's default dynamic-linker
+    // search path -- pointing LD_LIBRARY_PATH at it lets the loader find
+    // them. Derived from the real executablePath rather than a hardcoded
+    // "/tmp" so this stays correct if the unpack location ever changes.
+    const chromiumDir = path.dirname(executablePath);
+    process.env.LD_LIBRARY_PATH = process.env.LD_LIBRARY_PATH
+      ? chromiumDir + ':' + process.env.LD_LIBRARY_PATH
+      : chromiumDir;
+
     browser = await playwrightChromium.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(),
+      executablePath: executablePath,
       headless: true
     });
     const page = await browser.newPage();
