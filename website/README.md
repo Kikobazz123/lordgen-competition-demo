@@ -10,7 +10,7 @@ Just open `index.html` in a browser — no server required. If you'd rather serv
 python -m http.server 8000 --directory website
 ```
 
-then visit `http://localhost:8000`.
+then open `$BASE_URL` (default documented in the root `.env.example`).
 
 ## What this is (and isn't)
 
