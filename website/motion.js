@@ -97,6 +97,45 @@
     targets.forEach((el) => observer.observe(el));
   }
 
+  /*
+    Problem-tile spotlight. Writes --mx/--my custom properties that fx.css
+    turns into a radial highlight. Same rAF-throttle shape as initPanelTilt
+    above, and the same willChange discipline.
+
+    Custom properties rather than an inline transform on purpose: .problem-tile
+    is not a .panel, but keeping every new effect off inline `transform` avoids
+    ever colliding with the tilt handler if that changes.
+  */
+  function initTileSpotlight() {
+    if (!motionAllowed()) return;
+    const tiles = document.querySelectorAll('.problem-tile');
+
+    tiles.forEach((tile) => {
+      let ticking = false;
+      let lastX = 0;
+      let lastY = 0;
+
+      tile.addEventListener('pointermove', (e) => {
+        const rect = tile.getBoundingClientRect();
+        lastX = ((e.clientX - rect.left) / rect.width) * 100;
+        lastY = ((e.clientY - rect.top) / rect.height) * 100;
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(() => {
+            tile.style.setProperty('--mx', lastX + '%');
+            tile.style.setProperty('--my', lastY + '%');
+            ticking = false;
+          });
+        }
+      });
+
+      tile.addEventListener('pointerleave', () => {
+        tile.style.removeProperty('--mx');
+        tile.style.removeProperty('--my');
+      });
+    });
+  }
+
   function initMobileNav() {
     const toggle = document.getElementById('navToggle');
     const nav = document.getElementById('headerNav');
@@ -119,6 +158,7 @@
     initPanelTilt();
     initMagneticButtons();
     initScrollReveal();
+    initTileSpotlight();
     initMobileNav();
   }
 

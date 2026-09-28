@@ -1,0 +1,241 @@
+/*
+  fx.css -- the spectacle layer.
+
+  Everything here is additive craft on top of styles.css. Deleting this file
+  and its <link> returns the site to its previous appearance with no other
+  change; that is the reversibility story and it is worth preserving.
+
+  Three constraints from styles.css that every rule below respects:
+
+    1. `* { border-radius: 0 !important }` (styles.css:29) is a blanket
+       !important. Nothing here can use radius, and nothing here tries.
+    2. The reduced-motion block (styles.css:~58) collapses every animation and
+       transition duration to ~0. So no effect here may depend on a transition
+       actually running to reach its final appearance -- each must LAND on its
+       finished state. Reduced motion gets the composition, minus the movement.
+    3. .panel has `overflow: hidden` (required by panelSweep) and motion.js
+       writes inline `transform` on it. Nothing here sets transform on .panel
+       or expects to paint outside it.
+*/
+
+:root {
+  /* Not brand-ratified -- following the --state-* precedent in styles.css,
+     which documents the same status. These exist only for light effects. */
+  --halo: rgba(201, 162, 75, 0.16);   /* pointer-following glow */
+  --shaft: rgba(240, 226, 188, 0.07); /* light shafts / sweeps */
+  --ember: rgba(201, 162, 75, 0.42);  /* icon + edge accents */
+}
+
+/* ===========================================================================
+   Icons
+
+   Linear (stroked), not filled or duotone. Two reasons, both load-bearing:
+
+   - The whole site is built from 1px hairlines and flat type. Filled duotone
+     glyphs read as blobs against that and fight the design language; solar's
+     linear set strokes at 1.5, which is the same visual weight as the rules
+     already on the page.
+   - Legibility. A filled glyph at 28px on near-black loses its interior
+     detail entirely. Stroked shapes keep it.
+
+   Colour is --gold, never --brass: styles.css documents --brass as
+   borders-only because it fails contrast at 3.9:1, and an icon carrying
+   meaning is content, not a divider.
+   =========================================================================== */
+
+.fx-icon {
+  width: 30px; height: 30px;
+  display: block;
+  color: var(--gold);
+  flex: 0 0 auto;
+  transition: color 160ms ease, transform 220ms cubic-bezier(.2,.7,.3,1);
+}
+.fx-icon-sm { width: 19px; height: 19px; }
+
+/* ===========================================================================
+   Trust strip -- icon + label, and a single gold sweep as it enters
+   =========================================================================== */
+
+.trust-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.trust-list .fx-icon { color: var(--gold); opacity: 0.85; }
+
+/* The sweep is a ::after on the section so it cannot disturb list layout.
+   `forwards` + a one-shot animation means the end state is "invisible", which
+   is also the reduced-motion state -- nothing is left half-lit. */
+.trust-strip { position: relative; overflow: hidden; }
+.trust-strip::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 35%, var(--shaft) 50%, transparent 65%);
+  transform: translateX(-100%);
+  pointer-events: none;
+  opacity: 0;
+}
+.trust-strip.reveal-in::after {
+  animation: fxSweep 1400ms cubic-bezier(.3,.7,.4,1) 200ms 1 both;
+}
+@keyframes fxSweep {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+/* ===========================================================================
+   Problem tiles -- pointer-tracked spotlight
+   Coordinates come from motion.js as --mx/--my. Defaults are set here so a
+   tile that has never been hovered (or a keyboard-only session) renders
+   correctly rather than with an unresolved var.
+   =========================================================================== */
+
+.problem-tile {
+  position: relative;
+  --mx: 50%; --my: 0%;
+}
+.problem-tile::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(240px circle at var(--mx) var(--my), var(--halo), transparent 70%);
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
+}
+.problem-tile:hover::before,
+.problem-tile:focus-within::before { opacity: 1; }
+
+.problem-tile .fx-icon { margin-bottom: 16px; color: var(--gold); opacity: 0.8; }
+.problem-tile:hover .fx-icon,
+.problem-tile:focus-within .fx-icon { opacity: 1; }
+
+/* Tile content must sit above the spotlight layer. */
+.problem-tile h3, .problem-tile p, .problem-tile .fx-icon { position: relative; z-index: 1; }
+
+/* ===========================================================================
+   Solution cards -- animated gradient edge
+   .panel::before is taken by panelSweep in styles.css, so this uses ::after.
+   =========================================================================== */
+
+@property --fx-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.solution-card { position: relative; }
+.solution-card::after {
+  content: "";
+  position: absolute; inset: 0;
+  padding: 1px;
+  background: conic-gradient(from var(--fx-angle),
+              transparent 0deg, var(--ember) 40deg, transparent 110deg, transparent 360deg);
+  /* Mask to an outline: the gradient paints only the 1px border band. */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 240ms ease;
+  pointer-events: none;
+}
+.solution-card:hover::after,
+.solution-card:focus-within::after {
+  opacity: 1;
+  animation: fxRotate 4s linear infinite;
+}
+@keyframes fxRotate { to { --fx-angle: 360deg; } }
+
+.solution-card .fx-icon { margin-bottom: 16px; }
+.solution-card:hover .fx-icon,
+.solution-card:focus-within .fx-icon { transform: translateY(-2px); }
+
+/* ===========================================================================
+   FAQ -- native <details>, smoothed
+   The markup keeps <details>/<summary> exactly so keyboard and screen-reader
+   behaviour stay free. Only presentation changes.
+   =========================================================================== */
+
+.faq-list summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list .fx-q { flex: 1 1 auto; }
+
+.fx-chev {
+  width: 20px; height: 20px;
+  flex: 0 0 auto;
+  color: var(--gold);
+  opacity: 0.7;
+  transition: transform 220ms cubic-bezier(.2,.7,.3,1), color 160ms ease;
+}
+.faq-list details[open] .fx-chev { transform: rotate(180deg); opacity: 1; }
+.faq-list summary:hover .fx-chev { opacity: 1; }
+
+/* 0fr -> 1fr is the only way to animate to an unknown content height.
+   details[open] sets the end state directly, so with transitions disabled the
+   panel is simply open -- never stuck at zero height. */
+.faq-list .details-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 260ms cubic-bezier(.2,.7,.3,1);
+}
+.faq-list details[open] .details-body { grid-template-rows: 1fr; }
+.faq-list .details-inner { overflow: hidden; }
+
+.faq-list details[open] { border-left: 2px solid var(--gold); padding-left: 18px; }
+
+/* ===========================================================================
+   Buttons -- a moving specular band, the CSS stand-in for a shader.
+   Deliberately not WebGL: a GL context per button would blow the context cap
+   for no visual gain at this size.
+   =========================================================================== */
+
+.btn { position: relative; overflow: hidden; }
+.btn::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+  transform: translateX(-120%);
+  transition: transform 620ms cubic-bezier(.2,.7,.3,1);
+  pointer-events: none;
+}
+.btn:hover::after, .btn:focus-visible::after { transform: translateX(120%); }
+
+/* ===========================================================================
+   Below-the-fold rendering cost
+   Skips layout and paint for offscreen sections. contain-intrinsic-size keeps
+   the scrollbar honest so this cannot introduce CLS.
+   =========================================================================== */
+
+.problem-section, .solutions-section, .proof-section, .faq-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* ===========================================================================
+   Reduced motion
+   Mirror of everything above. styles.css already zeroes durations globally;
+   this block makes sure each effect's RESTING state is the correct one rather
+   than a frozen mid-animation frame.
+   =========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .trust-strip::after { animation: none !important; opacity: 0 !important; }
+  .solution-card::after { animation: none !important; }
+  .solution-card:hover::after,
+  .solution-card:focus-within::after { opacity: 1; }
+  .btn::after { display: none; }
+  .problem-tile::before { transition: none; }
+  .fx-icon, .fx-chev { transition: none; }
+  .faq-list .details-body { transition: none; }
+  .solution-card:hover .fx-icon,
+  .solution-card:focus-within .fx-icon { transform: none; }
+}
