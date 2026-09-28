@@ -53,6 +53,42 @@
 .fx-icon-sm { width: 19px; height: 19px; }
 
 /* ===========================================================================
+   Hero light shafts
+
+   Done here rather than in the WebGL scene. Additive geometry on an alpha:true
+   canvas composites against the page unpredictably -- the canvas gains alpha
+   wherever the glow draws, so a dim beam becomes an opaque patch that hides
+   the CSS hero glow behind it. mix-blend-mode: screen cannot darken what is
+   underneath it, which is exactly the guarantee a light effect needs.
+
+   The angle matches the CSS hero glow origin already set in styles.css
+   (14% -8%, upper left). If the two disagree the hero reads as two pages
+   pasted together, so this is not a free choice.
+   =========================================================================== */
+
+.hero { position: relative; }
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: -10% -5% 0 -5%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  background:
+    linear-gradient(107deg, transparent 38%, rgba(240,226,188,0.055) 42%, transparent 46%),
+    linear-gradient(107deg, transparent 52%, rgba(201,162,75,0.07) 57%, transparent 62%),
+    linear-gradient(107deg, transparent 66%, rgba(240,226,188,0.04) 69%, transparent 73%);
+  animation: fxShaftDrift 14s ease-in-out infinite alternate;
+}
+@keyframes fxShaftDrift {
+  from { opacity: 0.42; transform: translateX(-0.6%); }
+  to   { opacity: 0.62; transform: translateX(0.6%); }
+}
+
+/* The hero content must sit above the shaft layer. */
+.hero-inner { position: relative; z-index: 1; }
+
+/* ===========================================================================
    Trust strip -- icon + label, and a single gold sweep as it enters
    =========================================================================== */
 
@@ -228,6 +264,9 @@
    =========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+  /* Shafts stay -- they are composition, not movement. Only the drift stops,
+     landing at a fixed mid opacity rather than a frozen keyframe. */
+  .hero::after { animation: none !important; opacity: 0.5; transform: none; }
   .trust-strip::after { animation: none !important; opacity: 0 !important; }
   .solution-card::after { animation: none !important; }
   .solution-card:hover::after,
