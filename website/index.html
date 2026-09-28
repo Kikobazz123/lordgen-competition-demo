@@ -382,7 +382,10 @@
 </footer>
 
 <script src="app.js" defer></script>
-<script src="vendor/three.min.js" defer></script>
+<!-- three.min.js is deliberately NOT loaded here. gl-runtime.js fetches it only
+     when the capability gate passes, so mobile and reduced-motion visitors never
+     download ~670 KB they cannot use. -->
+<script src="gl-runtime.js" defer></script>
 <script src="hero3d.js" defer></script>
 <script src="motion.js" defer></script>
 </body>

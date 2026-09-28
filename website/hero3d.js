@@ -1,15 +1,16 @@
 /*
   Hero 3D scene -- a small, bounded canvas (not full-page) rendering the
   LordGen mark's own 5-bar rhythm as a slowly rotating, pointer-reactive
-  geometric cluster with thin connecting lines. Uses the globally-loaded
-  `THREE` from vendor/three.min.js (see vendor/THREE_LICENSE.txt for why
-  that's a pinned r160 classic script, not an ES module).
+  geometric cluster with thin connecting lines. Gets `THREE` from
+  gl-runtime.js, which owns the capability gate and downloads
+  vendor/three.min.js only when that gate passes (see vendor/THREE_LICENSE.txt
+  for why that's a pinned r160 classic script, not an ES module).
 
-  Bails cheaply and silently -- leaving the canvas empty -- whenever THREE
-  is unavailable, the viewport is mobile-width, the user prefers reduced
-  motion, or WebGL isn't supported. In every bail case the already-built
-  CSS hero background (styles.css) is the entire visual; there is nothing
-  else to fall back to here.
+  Bails cheaply and silently -- leaving the canvas empty -- whenever the
+  runtime declines to supply THREE (mobile width, reduced motion, no WebGL,
+  or the download failed). In every bail case the already-built CSS hero
+  background (styles.css) is the entire visual; there is nothing else to
+  fall back to here.
 */
 (function () {
   const MOBILE_QUERY = '(max-width: 860px)';
@@ -26,25 +27,8 @@
   const UNIT = 0.045; // SVG px -> scene units
 
   function init() {
-    if (typeof THREE === 'undefined') return;
-    if (window.matchMedia(MOBILE_QUERY).matches) return;
-    if (window.matchMedia(REDUCED_MOTION_QUERY).matches) return;
-
     const canvas = document.getElementById('heroCanvas');
     if (!canvas) return;
-
-    // Feature-detect on a scratch canvas, never on the real one -- a canvas
-    // can only bind one context for its lifetime, so probing #heroCanvas
-    // directly here would leave THREE.WebGLRenderer unable to attach its
-    // own context to it afterward.
-    let supportsWebGL = false;
-    try {
-      const probe = document.createElement('canvas');
-      supportsWebGL = !!(probe.getContext('webgl') || probe.getContext('experimental-webgl'));
-    } catch (e) {
-      supportsWebGL = false;
-    }
-    if (!supportsWebGL) return;
 
     const wrap = canvas.parentElement;
     let width = wrap.clientWidth;
@@ -206,9 +190,18 @@
     start();
   }
 
+  // The gate and the three.js download both live in gl-runtime.js now. A null
+  // THREE is the ordinary "this visitor gets no 3D" branch, not a failure.
+  function boot() {
+    if (!window.LordGenGL) return;
+    window.LordGenGL.whenReady().then(function (three) {
+      if (three) init();
+    });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    init();
+    boot();
   }
 })();
