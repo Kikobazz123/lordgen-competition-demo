@@ -1,0 +1,47 @@
+%% LordGen AI — competition deliverable #6, workflow diagram.
+%%
+%% Two renders come from this file:
+%%   workflow-diagram.png          — the LR version below. Slide-ready, and the
+%%                                   one that goes in the deck.
+%%   workflow-diagram-detailed.png — the same chain as TD, with the security and
+%%                                   idempotency notes attached. Too tall for a
+%%                                   slide, right for the repo.
+%%
+%% It documents what actually runs, not the aspirational design. Stage names are
+%% lifted from app.js:64-65; the endpoints are the real Vercel functions in
+%% website/api/. Re-render and commit the PNG whenever this changes.
+%%
+%% A third layout was tried first — service topology with subgraphs per layer
+%% (browser / Vercel / n8n / AI services). Mermaid's auto-layout turned it into
+%% crossing edges and a third of the canvas empty. The content was right and the
+%% composition was not, so it was replaced by the linear chain: judges follow one
+%% story, and the technology is annotated on each step instead of boxed by layer.
+
+flowchart LR
+  A["<b>1 · INQUIRY</b><br/>Diagnostic form<br/><i>/api/trigger-demo</i>"]
+  B["<b>2 · RESEARCHING</b><br/>Live web research<br/><i>n8n → Tavily</i>"]
+  C["<b>3 · RESEARCH READY</b><br/>Standard · Research-backed<br/>· Client-requested<br/><i>n8n → Gemini</i>"]
+  D["<b>4 · HUMAN PICKS</b><br/>Operator chooses<br/>what to build<br/><i>/api/decision</i>"]
+  E["<b>5 · PROPOSAL SENT</b><br/>Real email,<br/>real address<br/><i>n8n → Gmail</i>"]
+  F{"<b>6 · HUMAN<br/>APPROVAL GATE</b><br/>Nothing sends or<br/>deploys before this"}
+  G["<b>7 · BUILD STARTED</b><br/>Execution plan +<br/>starter automation"]
+  H["<b>8 · HANDOVER</b><br/>Plan · workflow · PDF<br/><i>/api/render-pdf</i>"]
+  X["<b>STOPPED</b><br/>Nothing sent.<br/>Nothing deployed."]
+
+  A --> B --> C --> D --> E --> F
+  F -->|approved| G --> H
+  F -->|rejected| X
+
+  %% Brand tokens, matching website/styles.css: ink #0A0A09, graphite #141312,
+  %% gold #C9A24B, leaf #F0E2BC, bone #E8E6E1, brass #8A6A24, critical #C1503A.
+  %% The gate is the only gold-filled node on the canvas — human approval is the
+  %% differentiator, so it gets the one piece of visual emphasis available.
+  classDef step fill:#141312,stroke:#8A6A24,stroke-width:1.5px,color:#E8E6E1
+  classDef gate fill:#C9A24B,stroke:#F0E2BC,stroke-width:3px,color:#0A0A09
+  classDef stop fill:#0A0A09,stroke:#C1503A,stroke-width:2px,color:#C1503A
+  classDef out fill:#141312,stroke:#F0E2BC,stroke-width:2px,color:#F0E2BC
+
+  class A,B,C,D,E,G step
+  class F gate
+  class X stop
+  class H out

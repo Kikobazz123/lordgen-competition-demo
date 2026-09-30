@@ -7,8 +7,31 @@
 <title>LordGen AI — AI Automation Built Around Your Business</title>
 <link rel="stylesheet" href="archivo-fontface.css">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="fx.css">
 </head>
 <body>
+<!-- Iconify "solar" bold-duotone sprite. Inline because external <use href>
+     is blocked at an opaque file:// origin. Licences: assets/CREDITS.md -->
+<svg id="icon-sprite" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-automation" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M7 10C7 8.58579 7 7.87868 7.43934 7.43934C7.87868 7 8.58579 7 10 7H14C15.4142 7 16.1213 7 16.5607 7.43934C17 7.87868 17 8.58579 17 10V14C17 15.4142 17 16.1213 16.5607 16.5607C16.1213 17 15.4142 17 14 17H10C8.58579 17 7.87868 17 7.43934 16.5607C7 16.1213 7 15.4142 7 14V10Z"/><path stroke-linejoin="round" d="M12.4286 10L11 12H13L11.5714 14"/><path d="M4 12C4 8.22876 4 6.34315 5.17157 5.17157C6.34315 4 8.22876 4 12 4C15.7712 4 17.6569 4 18.8284 5.17157C20 6.34315 20 8.22876 20 12C20 15.7712 20 17.6569 18.8284 18.8284C17.6569 20 15.7712 20 12 20C8.22876 20 6.34315 20 5.17157 18.8284C4 17.6569 4 15.7712 4 12Z"/><path d="M4 12H2"/><path d="M22 12H20"/><path d="M4 9H2"/><path d="M22 9H20"/><path d="M4 15H2"/><path d="M22 15H20"/><path d="M12 20L12 22"/><path d="M12 2L12 4"/><path d="M9 20L9 22"/><path d="M9 2L9 4"/><path d="M15 20L15 22"/><path d="M15 2L15 4"/></g></symbol>
+  <symbol id="i-agents" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="9" cy="6" r="4"/><path d="M15 9C16.6569 9 18 7.65685 18 6C18 4.34315 16.6569 3 15 3"/><ellipse cx="9" cy="17" rx="7" ry="4"/><path d="M18 14C19.7542 14.3847 21 15.3589 21 16.5C21 17.5293 19.9863 18.4229 18.5 18.8704"/></g></symbol>
+  <symbol id="i-workflow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z"/><path stroke-linejoin="round" d="M16 8H18M16.5 6.5L18 8L16.5 9.5"/><path d="M16 8C13.7909 8 12 9.79086 12 12V18"/><path stroke-linejoin="round" d="M8 8H6M7.5 6.5L6 8L7.5 9.5"/><path d="M8 8C10.2091 8 12 9.79086 12 12V18"/></g></symbol>
+  <symbol id="i-crm" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M4 18V6"/><path d="M20 6V18"/><path d="M12 10C16.4183 10 20 8.20914 20 6C20 3.79086 16.4183 2 12 2C7.58172 2 4 3.79086 4 6C4 8.20914 7.58172 10 12 10Z"/><path d="M20 12C20 14.2091 16.4183 16 12 16C7.58172 16 4 14.2091 4 12"/><path d="M20 18C20 20.2091 16.4183 22 12 22C7.58172 22 4 20.2091 4 18"/></g></symbol>
+  <symbol id="i-api" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M12 15.1082V20.1498C12 21.2635 11.0955 22.1875 10.0128 21.9673C5.44193 21.0381 2 16.9659 2 12.0832C2 6.51441 6.47715 2 12 2C17.5228 2 22 6.51441 22 12.0832C22 16.0743 19.7003 19.5239 16.3641 21.1581"/><path stroke-linejoin="round" d="M9 11.8C9 11.3582 9.35817 11 9.8 11H14.2C14.6418 11 15 11.3582 15 11.8V12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12V11.8Z"/><path d="M13.5 11V9"/><path d="M10.5 11V9"/></g></symbol>
+  <symbol id="i-bi" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z"/><path d="M7 18V9"/><path d="M12 18V6"/><path d="M17 18V13"/></g></symbol>
+  <symbol id="i-missed" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z"/><path d="M2 13H5.16026C6.06543 13 6.51802 13 6.91584 13.183C7.31367 13.3659 7.60821 13.7096 8.19729 14.3968L8.80271 15.1032C9.39179 15.7904 9.68633 16.1341 10.0842 16.317C10.482 16.5 10.9346 16.5 11.8397 16.5H12.1603C13.0654 16.5 13.518 16.5 13.9158 16.317C14.3137 16.1341 14.6082 15.7904 15.1973 15.1032L15.8027 14.3968C16.3918 13.7096 16.6863 13.3659 17.0842 13.183C17.482 13 17.9346 13 18.8397 13H22"/><path d="M8 7H16"/><path d="M10 10.5H14"/></g></symbol>
+  <symbol id="i-slow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linejoin="round" d="M12 8V12L14.5 14.5"/></g></symbol>
+  <symbol id="i-repetitive" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M7.37756 12.5556L7.37756 11.6296C7.37756 9.07276 9.46667 7 12.0437 7C13.4045 7 14.6293 7.57797 15.4822 8.5M6 11L7.37756 12.5556L9 11"/><path stroke-linejoin="round" d="M16.6188 11.4453V12.3712C16.6188 14.9281 14.5217 17.0009 11.9348 17.0009C10.5777 17.0009 9.35544 16.4304 8.5 15.5189M18 13L16.6188 11.4453L15 13"/><circle cx="12" cy="12" r="10"/></g></symbol>
+  <symbol id="i-disconnected" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M2 8L8 10"/><path d="M6 4L8 7"/><path d="M11 6.56252L14.7001 2.93755C16.1597 1.50753 18.7629 1.73938 20.5145 3.4554C22.266 5.17142 22.5027 7.72176 21.043 9.15178L18.1358 12"/><path d="M15 15.5866L10.9653 20.001C9.57254 21.5247 7.0887 21.2777 5.41744 19.4492C3.74618 17.6207 3.52038 14.9032 4.91309 13.3795L6.17395 12"/></g></symbol>
+  <symbol id="i-manual" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M3 10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H13C16.7712 2 18.6569 2 19.8284 3.17157C21 4.34315 21 6.22876 21 10V14C21 17.7712 21 19.6569 19.8284 20.8284C18.6569 22 16.7712 22 13 22H11C7.22876 22 5.34315 22 4.17157 20.8284C3 19.6569 3 17.7712 3 14V10Z"/><path d="M8 12H16"/><path d="M8 8H16"/><path d="M8 16H13"/></g></symbol>
+  <symbol id="i-inconsistent" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M3 10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H13C16.7712 2 18.6569 2 19.8284 3.17157C21 4.34315 21 6.22876 21 10V14C21 17.7712 21 19.6569 19.8284 20.8284C18.6569 22 16.7712 22 13 22H11C7.22876 22 5.34315 22 4.17157 20.8284C3 19.6569 3 17.7712 3 14V10Z"/><path d="M8 18H16"/><path d="M16.4117 9.97078L17.0774 8.30671C17.5516 7.12125 16.8086 5.80104 15.5492 5.59114L15.1238 5.52023C13.0557 5.17555 10.9447 5.17555 8.87663 5.52023L8.45119 5.59114C7.19178 5.80104 6.44885 7.12125 6.92303 8.30671L7.58866 9.97078C7.82443 10.5602 8.45936 10.8848 9.07523 10.7309C10.9957 10.2508 13.0047 10.2508 14.9252 10.7309C15.5411 10.8848 16.176 10.5602 16.4117 9.97078Z"/><path d="M10.1794 9.92856L9.50439 8.0459"/></g></symbol>
+  <symbol id="i-lead" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 2H19.5C20.3284 2 21 2.67157 21 3.5V5.5C21 6.32843 20.3284 7 19.5 7H17M17 2H13C7.47715 2 3 6.47715 3 12C3 17.5228 7.47715 22 13 22H17M17 2V7M17 7H13C10.2386 7 8 9.23858 8 12C8 14.7614 10.2386 17 13 17H17M17 17H19.5C20.3284 17 21 17.6716 21 18.5V20.5C21 21.3284 20.3284 22 19.5 22H17M17 17V22"/></symbol>
+  <symbol id="i-support" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 13.5997 2.37562 15.1116 3.04346 16.4525C3.22094 16.8088 3.28001 17.2161 3.17712 17.6006L2.58151 19.8267C2.32295 20.793 3.20701 21.677 4.17335 21.4185L6.39939 20.8229C6.78393 20.72 7.19121 20.7791 7.54753 20.9565C8.88837 21.6244 10.4003 22 12 22Z"/><path stroke-linejoin="round" d="M8 12H8.009M11.991 12H12M15.991 12H16"/></g></symbol>
+  <symbol id="i-operations" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M13.7654 2.15224C13.3978 2 12.9319 2 12 2C11.0681 2 10.6022 2 10.2346 2.15224C9.74457 2.35523 9.35522 2.74458 9.15223 3.23463C9.05957 3.45834 9.0233 3.7185 9.00911 4.09799C8.98826 4.65568 8.70226 5.17189 8.21894 5.45093C7.73564 5.72996 7.14559 5.71954 6.65219 5.45876C6.31645 5.2813 6.07301 5.18262 5.83294 5.15102C5.30704 5.08178 4.77518 5.22429 4.35436 5.5472C4.03874 5.78938 3.80577 6.1929 3.33983 6.99993C2.87389 7.80697 2.64092 8.21048 2.58899 8.60491C2.51976 9.1308 2.66227 9.66266 2.98518 10.0835C3.13256 10.2756 3.3397 10.437 3.66119 10.639C4.1338 10.936 4.43789 11.4419 4.43786 12C4.43783 12.5581 4.13375 13.0639 3.66118 13.3608C3.33965 13.5629 3.13248 13.7244 2.98508 13.9165C2.66217 14.3373 2.51966 14.8691 2.5889 15.395C2.64082 15.7894 2.87379 16.193 3.33973 17C3.80568 17.807 4.03865 18.2106 4.35426 18.4527C4.77508 18.7756 5.30694 18.9181 5.83284 18.8489C6.07289 18.8173 6.31632 18.7186 6.65204 18.5412C7.14547 18.2804 7.73556 18.27 8.2189 18.549C8.70224 18.8281 8.98826 19.3443 9.00911 19.9021C9.02331 20.2815 9.05957 20.5417 9.15223 20.7654C9.35522 21.2554 9.74457 21.6448 10.2346 21.8478C10.6022 22 11.0681 22 12 22C12.9319 22 13.3978 22 13.7654 21.8478C14.2554 21.6448 14.6448 21.2554 14.8477 20.7654C14.9404 20.5417 14.9767 20.2815 14.9909 19.902C15.0117 19.3443 15.2977 18.8281 15.781 18.549C16.2643 18.2699 16.8544 18.2804 17.3479 18.5412C17.6836 18.7186 17.927 18.8172 18.167 18.8488C18.6929 18.9181 19.2248 18.7756 19.6456 18.4527C19.9612 18.2105 20.1942 17.807 20.6601 16.9999C21.1261 16.1929 21.3591 15.7894 21.411 15.395C21.4802 14.8691 21.3377 14.3372 21.0148 13.9164C20.8674 13.7243 20.6602 13.5628 20.3387 13.3608C19.8662 13.0639 19.5621 12.558 19.5621 11.9999C19.5621 11.4418 19.8662 10.9361 20.3387 10.6392C20.6603 10.4371 20.8675 10.2757 21.0149 10.0835C21.3378 9.66273 21.4803 9.13087 21.4111 8.60497C21.3592 8.21055 21.1262 7.80703 20.6602 7C20.1943 6.19297 19.9613 5.78945 19.6457 5.54727C19.2249 5.22436 18.693 5.08185 18.1671 5.15109C17.9271 5.18269 17.6837 5.28136 17.3479 5.4588C16.8545 5.71959 16.2644 5.73002 15.7811 5.45096C15.2977 5.17191 15.0117 4.65566 14.9909 4.09794C14.9767 3.71848 14.9404 3.45833 14.8477 3.23463C14.6448 2.74458 14.2554 2.35523 13.7654 2.15224Z"/></g></symbol>
+  <symbol id="i-reporting" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M22 10.5V12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2H13.5"/><path d="M7 14L8.79689 11.8437C9.50894 10.9893 9.86496 10.562 10.3333 10.562C10.8017 10.562 11.1577 10.9893 11.8698 11.8437L12.1302 12.1563C12.8423 13.0107 13.1983 13.438 13.6667 13.438C14.135 13.438 14.4911 13.0107 15.2031 12.1563L17 10"/><circle cx="19" cy="5" r="3"/></g></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9L12 15L5 9"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12H20M14 18L20 12L14 6"/></symbol>
+</svg>
 
 <header class="site-header">
   <div class="container header-inner">
@@ -65,12 +88,12 @@
 <section class="trust-strip" data-reveal>
   <div class="container">
     <ul class="trust-list">
-      <li>AI Automation</li>
-      <li>AI Agents</li>
-      <li>Workflow Engineering</li>
-      <li>CRM Automation</li>
-      <li>API Integration</li>
-      <li>Business Intelligence</li>
+      <li><svg class="fx-icon fx-icon-sm" aria-hidden="true" focusable="false"><use href="#i-automation"></use></svg><span>AI Automation</span></li>
+      <li><svg class="fx-icon fx-icon-sm" aria-hidden="true" focusable="false"><use href="#i-agents"></use></svg><span>AI Agents</span></li>
+      <li><svg class="fx-icon fx-icon-sm" aria-hidden="true" focusable="false"><use href="#i-workflow"></use></svg><span>Workflow Engineering</span></li>
+      <li><svg class="fx-icon fx-icon-sm" aria-hidden="true" focusable="false"><use href="#i-crm"></use></svg><span>CRM Automation</span></li>
+      <li><svg class="fx-icon fx-icon-sm" aria-hidden="true" focusable="false"><use href="#i-api"></use></svg><span>API Integration</span></li>
+      <li><svg class="fx-icon fx-icon-sm" aria-hidden="true" focusable="false"><use href="#i-bi"></use></svg><span>Business Intelligence</span></li>
     </ul>
   </div>
 </section>
@@ -196,12 +219,12 @@
       <p>Different industry, same operational drag. LordGen is the system layer that connects these pieces.</p>
     </div>
     <div class="problem-grid">
-      <div class="problem-tile" data-reveal><h3>Missed Leads</h3><p>Inquiries arrive faster than anyone can respond to them.</p></div>
-      <div class="problem-tile" data-reveal><h3>Slow Follow-Up</h3><p>By the time a human replies, the prospect has moved on.</p></div>
-      <div class="problem-tile" data-reveal><h3>Repetitive Admin</h3><p>The same manual steps, run by hand, every single time.</p></div>
-      <div class="problem-tile" data-reveal><h3>Disconnected Tools</h3><p>The CRM, inbox, and calendar don't talk to each other.</p></div>
-      <div class="problem-tile" data-reveal><h3>Manual Reporting</h3><p>Someone assembles the numbers by hand, after the fact.</p></div>
-      <div class="problem-tile" data-reveal><h3>Inconsistent Response</h3><p>Quality depends on who happens to answer.</p></div>
+      <div class="problem-tile" data-reveal><svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-missed"></use></svg><h3>Missed Leads</h3><p>Inquiries arrive faster than anyone can respond to them.</p></div>
+      <div class="problem-tile" data-reveal><svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-slow"></use></svg><h3>Slow Follow-Up</h3><p>By the time a human replies, the prospect has moved on.</p></div>
+      <div class="problem-tile" data-reveal><svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-repetitive"></use></svg><h3>Repetitive Admin</h3><p>The same manual steps, run by hand, every single time.</p></div>
+      <div class="problem-tile" data-reveal><svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-disconnected"></use></svg><h3>Disconnected Tools</h3><p>The CRM, inbox, and calendar don't talk to each other.</p></div>
+      <div class="problem-tile" data-reveal><svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-manual"></use></svg><h3>Manual Reporting</h3><p>Someone assembles the numbers by hand, after the fact.</p></div>
+      <div class="problem-tile" data-reveal><svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-inconsistent"></use></svg><h3>Inconsistent Response</h3><p>Quality depends on who happens to answer.</p></div>
     </div>
   </div>
 </section>
@@ -245,6 +268,7 @@
     </div>
     <div class="solutions-grid">
       <div class="panel solution-card" data-reveal>
+        <svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-lead"></use></svg>
         <h3>Lead Automation</h3>
         <p class="solution-problem">Inquiries sit unanswered while a human gets to them.</p>
         <p class="solution-outcome">Capture, qualify, route, and follow up automatically.</p>
@@ -252,6 +276,7 @@
         <a href="#diagnostic-demo">See a system &rarr;</a>
       </div>
       <div class="panel solution-card" data-reveal>
+        <svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-support"></use></svg>
         <h3>Customer Support</h3>
         <p class="solution-problem">Routine questions consume time better spent on edge cases.</p>
         <p class="solution-outcome">Answer routine questions, escalate what needs a human, preserve context.</p>
@@ -259,6 +284,7 @@
         <a href="#diagnostic-demo">See a system &rarr;</a>
       </div>
       <div class="panel solution-card" data-reveal>
+        <svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-crm"></use></svg>
         <h3>CRM Automation</h3>
         <p class="solution-problem">Records go stale because updating them is manual.</p>
         <p class="solution-outcome">Create and update records, assign leads, trigger follow-up, keep pipeline hygiene.</p>
@@ -266,6 +292,7 @@
         <a href="#diagnostic-demo">Run diagnostic &rarr;</a>
       </div>
       <div class="panel solution-card" data-reveal>
+        <svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-operations"></use></svg>
         <h3>Operations Automation</h3>
         <p class="solution-problem">Repetitive internal processes still run by hand.</p>
         <p class="solution-outcome">Turn recurring internal work into structured, monitored workflows.</p>
@@ -273,6 +300,7 @@
         <a href="#diagnostic-demo">Run diagnostic &rarr;</a>
       </div>
       <div class="panel solution-card" data-reveal>
+        <svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-agents"></use></svg>
         <h3>AI Agents</h3>
         <p class="solution-problem">Research and analysis eat hours before a decision gets made.</p>
         <p class="solution-outcome">Research, analyze, decide, and take approved action.</p>
@@ -280,6 +308,7 @@
         <a href="#diagnostic-demo">Run diagnostic &rarr;</a>
       </div>
       <div class="panel solution-card" data-reveal>
+        <svg class="fx-icon" aria-hidden="true" focusable="false"><use href="#i-reporting"></use></svg>
         <h3>Reporting &amp; Intelligence</h3>
         <p class="solution-problem">Business data is scattered across tools nobody has time to reconcile.</p>
         <p class="solution-outcome">Turn scattered data into information someone can act on.</p>
@@ -338,11 +367,11 @@
       <h2>Frequently Asked Questions</h2>
     </div>
     <div class="faq-list">
-      <details data-reveal><summary>Is this a real AI system, or a mockup?</summary><p>Real. The Business Diagnostic above calls live, running n8n workflows &mdash; a real AI research agent, a real proposal email, and a real starter automation build. Nothing on this page is simulated.</p></details>
-      <details data-reveal><summary>Does the Business Diagnostic use my real data?</summary><p>Yes. Whatever business name you enter is researched live on the public web. Your contact email receives a real proposal email if you choose to move forward &mdash; nothing is sent unless you submit the form.</p></details>
-      <details data-reveal><summary>What tools does LordGen connect to?</summary><p>Depends on the business, but commonly a CRM, email/SMS, calendars, and forms, orchestrated through n8n with an AI layer for analysis and drafting.</p></details>
-      <details data-reveal><summary>How does human approval work?</summary><p>Every AI-drafted action that goes external &mdash; a reply, a booking confirmation &mdash; is held for human approval before it sends. That gate is not optional and is visible throughout this demo.</p></details>
-      <details data-reveal><summary>What happens after I run the diagnostic?</summary><p>You see the detected opportunity, choose which parts to build, and get a concrete automation specification &mdash; trigger, inputs, steps, and integrations &mdash; that a developer can inspect and implement.</p></details>
+      <details data-reveal><summary><span class="fx-q">Is this a real AI system, or a mockup?</span><svg class="fx-chev" aria-hidden="true" focusable="false"><use href="#i-chevron"></use></svg></summary><div class="details-body"><div class="details-inner"><p>Real. The Business Diagnostic above calls live, running n8n workflows &mdash; a real AI research agent, a real proposal email, and a real starter automation build. Nothing on this page is simulated.</p></div></div></details>
+      <details data-reveal><summary><span class="fx-q">Does the Business Diagnostic use my real data?</span><svg class="fx-chev" aria-hidden="true" focusable="false"><use href="#i-chevron"></use></svg></summary><div class="details-body"><div class="details-inner"><p>Yes. Whatever business name you enter is researched live on the public web. Your contact email receives a real proposal email if you choose to move forward &mdash; nothing is sent unless you submit the form.</p></div></div></details>
+      <details data-reveal><summary><span class="fx-q">What tools does LordGen connect to?</span><svg class="fx-chev" aria-hidden="true" focusable="false"><use href="#i-chevron"></use></svg></summary><div class="details-body"><div class="details-inner"><p>Depends on the business, but commonly a CRM, email/SMS, calendars, and forms, orchestrated through n8n with an AI layer for analysis and drafting.</p></div></div></details>
+      <details data-reveal><summary><span class="fx-q">How does human approval work?</span><svg class="fx-chev" aria-hidden="true" focusable="false"><use href="#i-chevron"></use></svg></summary><div class="details-body"><div class="details-inner"><p>Every AI-drafted action that goes external &mdash; a reply, a booking confirmation &mdash; is held for human approval before it sends. That gate is not optional and is visible throughout this demo.</p></div></div></details>
+      <details data-reveal><summary><span class="fx-q">What happens after I run the diagnostic?</span><svg class="fx-chev" aria-hidden="true" focusable="false"><use href="#i-chevron"></use></svg></summary><div class="details-body"><div class="details-inner"><p>You see the detected opportunity, choose which parts to build, and get a concrete automation specification &mdash; trigger, inputs, steps, and integrations &mdash; that a developer can inspect and implement.</p></div></div></details>
     </div>
   </div>
 </section>
@@ -382,7 +411,10 @@
 </footer>
 
 <script src="app.js" defer></script>
-<script src="vendor/three.min.js" defer></script>
+<!-- three.min.js is deliberately NOT loaded here. gl-runtime.js fetches it only
+     when the capability gate passes, so mobile and reduced-motion visitors never
+     download ~670 KB they cannot use. -->
+<script src="gl-runtime.js" defer></script>
 <script src="hero3d.js" defer></script>
 <script src="motion.js" defer></script>
 </body>

@@ -27,6 +27,14 @@
 }
 
 * { box-sizing: border-box; border-radius: 0 !important; }
+
+/* app.js reveals the diagnostic result panels by clearing their `hidden`
+   attribute. Any rule that later gives .panel (or any hidden node) an explicit
+   `display` beats the UA sheet's `[hidden] { display: none }` on specificity,
+   which would render every result panel before the diagnostic has run. This
+   guard makes `hidden` win regardless of what the visual layer does. */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
