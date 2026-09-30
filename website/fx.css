@@ -66,6 +66,18 @@
    pasted together, so this is not a free choice.
    =========================================================================== */
 
+/*
+  Measured 2026-09-30, from composited pixels rather than token values, because
+  a light layer changes the ground the text sits on:
+
+    hero, worst case   — bone 12.02:1 · white 14.99:1 · gold 6.25:1  all pass
+                         slate would be 4.35:1 — UNDER the 4.5:1 body threshold
+    final-cta          — bone 14.66:1 · white 18.28:1 · gold 7.62:1 · slate 5.30:1
+
+  So: do not put --slate text in the hero. The shafts brighten the ground enough
+  that slate's usual 5.7:1 stops holding there. Anywhere else on the page it is
+  fine, including the final CTA, whose glow is weaker.
+*/
 .hero { position: relative; }
 .hero::after {
   content: "";
@@ -87,6 +99,49 @@
 
 /* The hero content must sit above the shaft layer. */
 .hero-inner { position: relative; z-index: 1; }
+
+/*
+  No-3D hero: a static composition, not an empty column.
+
+  gl-runtime.js sets .no-gl on <html> whenever the capability gate declines
+  (reduced motion, no WebGL, or the download failed). Without this the right
+  half of the hero is simply blank for those visitors — measurably worse than
+  what everyone else sees. This draws the mark's own 5-bar rhythm in CSS: the
+  same five heights the WebGL scene derives from the logo SVG (60/84/108/84/60),
+  with the centre member in leaf, lit from the upper left to agree with the
+  page's light source.
+
+  Scoped above 860px because styles.css already hides .hero-3d below that.
+*/
+@media (min-width: 861px) {
+  :root.no-gl .hero-3d canvas { display: none; }
+  :root.no-gl .hero-3d {
+    opacity: 1;
+    /* Five bars as five gradient layers, painted bottom-aligned. Widths and the
+       60/84/108/84/60 height ratio come from the same logo geometry hero3d.js
+       uses; the centre member is leaf, as in the mark. A sixth layer is the
+       base plate. Gradients run 160deg so the highlight falls upper-left,
+       matching the page's light source. */
+    background-image:
+      linear-gradient(160deg, #F0E2BC 0%, #C9A24B 100%),
+      linear-gradient(160deg, #C9A24B 0%, #8A6A24 100%),
+      linear-gradient(160deg, #C9A24B 0%, #8A6A24 100%),
+      linear-gradient(160deg, #C9A24B 0%, #8A6A24 100%),
+      linear-gradient(160deg, #C9A24B 0%, #8A6A24 100%),
+      linear-gradient(#8A6A24, #8A6A24);
+    background-repeat: no-repeat;
+    background-size:
+      11% 46%,
+      11% 36%, 11% 36%,
+      11% 26%, 11% 26%,
+      63% 3px;
+    background-position:
+      50% 82%,
+      35.5% 82%, 64.5% 82%,
+      21% 82%, 79% 82%,
+      50% 82%;
+  }
+}
 
 /* ===========================================================================
    Trust strip -- icon + label, and a single gold sweep as it enters
@@ -244,6 +299,80 @@
   pointer-events: none;
 }
 .btn:hover::after, .btn:focus-visible::after { transform: translateX(120%); }
+
+/* ===========================================================================
+   Final CTA — the page's last frame, and it was its weakest
+
+   Scored 4/10 on composition in the Phase 7 pass: a flat band with a small
+   heading and three equal buttons. It is the last thing anyone sees, so it
+   gets the strongest treatment on the page after the hero.
+
+   Same mix-blend-mode: screen shafts as the hero, for the same reason — they
+   cannot darken what is beneath them, so there is no way to produce the
+   opaque-patch artifact that sank the WebGL version.
+   =========================================================================== */
+
+.final-cta { position: relative; overflow: hidden; }
+.final-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(1100px 380px at 50% 118%, rgba(201,162,75,0.20), transparent 70%),
+    linear-gradient(103deg, transparent 40%, rgba(240,226,188,0.05) 44%, transparent 48%),
+    linear-gradient(103deg, transparent 58%, rgba(201,162,75,0.06) 62%, transparent 66%);
+  animation: fxShaftDrift 16s ease-in-out infinite alternate;
+}
+.final-cta > * { position: relative; z-index: 1; }
+
+/* A single hairline above the band, so the section reads as a deliberate
+   close rather than as one more row that happens to be last. */
+.final-cta::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  border-top: 1px solid var(--gold);
+  pointer-events: none;
+}
+
+/* ===========================================================================
+   Model section — make four boxes read as one sequence
+
+   Scored 5/10: correct, but the four steps sat as equal blocks with nothing
+   carrying the eye across them. A rule through the step numbers turns a row
+   of cards into a progression, which is what the content actually is.
+   =========================================================================== */
+
+/* Only while the grid is one row. styles.css reflows .model-grid to two
+   columns at 860px and one at 480px, where a horizontal connector would run
+   between unrelated steps and read as a mistake. */
+@media (min-width: 861px) {
+  .model-section .model-step { position: relative; }
+  .model-section .model-step::before {
+    content: "";
+    position: absolute;
+    top: 34px;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--brass);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  /* The sequence starts at the first number and ends at the last, rather than
+     running off both edges of the section. */
+  .model-section .model-step:first-child::before { left: 50%; }
+  .model-section .model-step:last-child::before { right: 50%; }
+  .model-section .model-number {
+    position: relative;
+    display: inline-block;
+    padding-right: 14px;
+    background: var(--graphite);
+  }
+}
 
 /* ===========================================================================
    Below-the-fold rendering cost

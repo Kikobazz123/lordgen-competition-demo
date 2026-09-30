@@ -75,10 +75,22 @@
     is a normal branch here, and making callers write try/catch around a
     progressive enhancement invites one of them to forget and break the page.
   */
+  /*
+    Mark the document when this visitor gets no 3D, so CSS can put something
+    deliberate where the scene would have been. Without it the hero's right
+    column is simply empty for every reduced-motion desktop visitor, which is a
+    worse composition than the one everyone else sees -- a downgrade, not an
+    alternative. Set before the promise resolves so the first paint is correct.
+  */
+  function markNoGL() {
+    try { document.documentElement.classList.add('no-gl'); } catch (e) { /* pre-DOM */ }
+  }
+
   function whenReady() {
-    if (!gatePasses()) return Promise.resolve(null);
+    if (!gatePasses()) { markNoGL(); return Promise.resolve(null); }
     return loadThree().catch(function (err) {
       if (window.console && console.warn) console.warn('[gl-runtime]', err.message);
+      markNoGL();
       return null;
     });
   }
