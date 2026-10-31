@@ -1,6 +1,11 @@
 # LordGen AI — Interactive Demo Website
 
-A single self-contained static page (no build step, no framework, no backend) demonstrating that LordGen AI's workflow adapts across businesses without being rebuilt.
+A single page with no build step and no framework — plain HTML, CSS and vanilla JS —
+demonstrating that LordGen AI's workflow adapts across businesses without being rebuilt.
+
+It is **not** backendless, despite what this line used to claim: the Business Diagnostic
+calls Vercel serverless functions in `api/`, which call live n8n workflows. The page still
+opens and renders straight off disk via `file://`; only the diagnostic needs the server.
 
 ## Run it
 
